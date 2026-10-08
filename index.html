@@ -19,9 +19,10 @@
     <section id="homeScreen" class="screen card">
       <p class="intro">
         Una sesión son <strong>10 preguntas</strong>. En <strong>Normal</strong> verás un
-        símbolo de UML y elegirás su nombre entre tres opciones; en <strong>Difícil</strong>
-        tendrás que elegir el símbolo, escribir el nombre o resolver un caso. Cada acierto
-        suma 1 punto.
+        símbolo de UML y elegirás su nombre; en <strong>Difícil</strong> tendrás que
+        elegir el símbolo, escribir el nombre o resolver un caso; en
+        <strong>Práctica con contextos</strong> razonarás por qué un contexto se
+        representa de una forma y no de otra. Cada acierto suma 1 punto.
       </p>
 
       <div class="difficulty-field">
@@ -29,6 +30,7 @@
         <select id="difficultySelect" class="difficulty-select">
           <option value="normal">Normal</option>
           <option value="hard">Difícil</option>
+          <option value="practice">Práctica con contextos</option>
         </select>
       </div>
 
@@ -106,6 +108,7 @@
     <p class="footer-copy">©2026 GaboSaurio. Todos los derechos reservados.</p>
   </footer>
 
+  <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
