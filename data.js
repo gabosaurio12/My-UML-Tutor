@@ -401,85 +401,8 @@ const questions = [
   { symbol: "realization", options: ["Realización", "Generalización", "Caso de uso"] }
 ];
 
-// Banco de la dificultad de práctica: los mismos 10 símbolos con contextos
-// nuevos, escritos para que el alumno razone el porqué (ciclo de vida,
-// propiedad, «es un», contrato…) en vez de solo reconocer el dibujo.
-// Cada `context` sirve como enunciado de la pregunta `context` (lenguaje
-// natural → UML) y como opción correcta de la pregunta `explain`
-// (diagrama → lenguaje natural). Las opciones con las que se elige el símbolo
-// se heredan de `questions`, para no duplicar los distractores.
-const practiceQuestions = [
-  {
-    symbol: "class",
-    context:
-      "Todos los usuarios del sistema deben tener los mismos atributos (nombre, email) y las " +
-      "mismas operaciones (loguearse, cambiar la clave), sin que haya todavía valores concretos. " +
-      "¿Qué elemento define esa estructura común que comparten todas las instancias?"
-  },
-  {
-    symbol: "object",
-    context:
-      "Ya existe la clase Producto y ahora necesitas representar el producto concreto con código " +
-      "«A-100», con precio 12,50 € y 3 unidades en stock en este momento. ¿Qué elemento " +
-      "representa ese ejemplar con sus valores?"
-  },
-  {
-    symbol: "composition",
-    context:
-      "En un hotel, una Habitación se reserva solo dentro de una Estancia; si la Estancia se " +
-      "elimina del sistema, la reserva de la habitación ya no tiene sentido y debe desaparecer " +
-      "con ella. ¿Qué relación modela que la parte vive y muere con el todo?"
-  },
-  {
-    symbol: "aggregation",
-    context:
-      "Un Coche se compone de sus Ruedas, pero si el Coche se desguaza, las Ruedas pueden " +
-      "aprovecharse en otro vehículo. ¿Qué relación modela esa parte-todo en la que la parte " +
-      "puede sobrevivir al todo?"
-  },
-  {
-    symbol: "association",
-    context:
-      "Un Alumno se matricula en varios Cursos y el sistema debe recordar durante años qué alumno " +
-      "está en qué curso, de modo que ambos sigan existiendo por separado. ¿Qué relación modela " +
-      "ese vínculo estructural duradero entre dos clases?"
-  },
-  {
-    symbol: "dependency",
-    context:
-      "La clase Ticket usa los métodos de la clase Impresora solo mientras se genera el PDF del " +
-      "ticket, sin guardar la impresora como atributo. ¿Qué relación expresa que una clase " +
-      "necesita a otra de forma temporal?"
-  },
-  {
-    symbol: "package",
-    context:
-      "El modelo tiene 150 clases y nadie encuentra las del dominio de notificaciones; quieres " +
-      "agruparlas en un bloque con nombre para organizarlo, sin añadir código ni comportamiento. " +
-      "¿Qué elemento sirve para agrupar elementos relacionados en un contenedor?"
-  },
-  {
-    symbol: "component",
-    context:
-      "El módulo de cobros trabaja con Paypal, pero en Navidad quieren cambiar a Stripe sin tocar " +
-      "el código del resto del sistema. ¿Qué elemento modela una unidad que se puede reemplazar " +
-      "por completo y que ofrece sus servicios como un contrato?"
-  },
-  {
-    symbol: "generalization",
-    context:
-      "Vehículo tiene los atributos (matrícula, marca) y el comportamiento (arrancar) que " +
-      "comparten Coche y Moto, y cada uno añade los suyos. ¿Qué relación expresa que Coche y Moto " +
-      "SON un Vehículo y heredan lo común?"
-  },
-  {
-    symbol: "realization",
-    context:
-      "La interfaz Registro define qué operaciones debe tener cualquier sistema que guarde datos, " +
-      "y la clase FicheroPlano cumple ese contrato implementándolas, sin heredar de otra clase. " +
-      "¿Qué relación expresa que una clase implementa la especificación de una interfaz?"
-  }
-];
+// El banco de la dificultad de práctica vive en `data-practice.js`: cada
+// dificultad tiene sus propios casos o escenarios y no comparten textos.
 
 // Clave donde se guarda el récord en localStorage.
 const STORAGE_KEY = "uml-study-session";

@@ -172,8 +172,8 @@ function shuffle(items) {
 // Tipos de la dificultad difícil, en el orden en que se repiten.
 const HARD_QUESTION_TYPES = ["inverse", "open", "case"];
 
-// Tipos de la dificultad de práctica: los dos sentidos (contexto → UML y UML →
-// contexto), cada uno con sus dos formatos de respuesta.
+// Tipos de la dificultad de práctica: los dos sentidos (escenario → UML y UML →
+// escenario), cada uno con sus dos formatos de respuesta.
 const PRACTICE_QUESTION_TYPES = ["context-open", "context-mc", "explain-open", "explain-mc"];
 
 // Ayuda que se muestra sobre las opciones (vacío en el tipo clásico).
@@ -182,10 +182,10 @@ const QUESTION_HINTS = {
   inverse: "Se te da el nombre: elige el símbolo que lo representa.",
   open: "Se muestra un símbolo: escribe su nombre.",
   case: "Elige la relación o el elemento más apropiado para el caso.",
-  "context-open": "Lee el contexto y escribe el nombre de lo que lo representa en UML.",
-  "context-mc": "Lee el contexto y elige el elemento o relación que lo representa.",
+  "context-open": "Lee el escenario y escribe el nombre de lo que representa en UML.",
+  "context-mc": "Lee el escenario y elige el elemento o relación que representa.",
   "explain-open": "Mira el diagrama y escribe el nombre de lo que muestra.",
-  "explain-mc": "Mira el diagrama y elige el contexto que representa."
+  "explain-mc": "Mira el diagrama y elige el escenario que representa."
 };
 
 // ¿La pregunta se responde escribiendo en el campo de texto?
@@ -195,7 +195,7 @@ function isOpenType(type) {
 
 // Tipo de la pregunta `index`: la clásica en Normal, en Difícil las tres
 // alternadas (4 inversas, 3 abiertas y 3 de caso) y en Práctica los cuatro
-// formatos alternados (3 contexto-abiertas, 3 contexto-opción, 2 explicar).
+// formatos alternados (3 escenario-abiertas, 3 escenario-opción, 2 explicar).
 function questionType(index) {
   if (state.difficulty === "hard") {
     return HARD_QUESTION_TYPES[index % HARD_QUESTION_TYPES.length];
@@ -206,7 +206,7 @@ function questionType(index) {
   return "symbol";
 }
 
-// Banco de la dificultad elegida: la práctica usa sus contextos propios.
+// Banco de la dificultad elegida: la práctica usa sus escenarios propios.
 function sessionBank() {
   return state.difficulty === "practice" ? practiceQuestions : questions;
 }
@@ -262,14 +262,14 @@ function renderQuestion() {
 }
 
 // Enunciado: el símbolo (clásico, abierto y explicar), el nombre (inversa), el
-// caso de Difícil o el contexto escrito de Práctica.
+// caso de Difícil o el escenario de Práctica.
 function renderPrompt(question, type) {
   const fact = symbolFacts[question.symbol];
 
   if (type === "inverse") {
     appendPrompt("question-name", fact.name);
   } else if (type === "case" || type === "context-open" || type === "context-mc") {
-    appendPrompt("scenario", type === "case" ? fact.case : question.context);
+    appendPrompt("scenario", type === "case" ? fact.case : question.scenario);
   } else {
     // En Práctica el diagrama va con cajas neutras: el alumno tiene que leer el
     // conector y el significado, no los nombres de las clases. Normal y Difícil
@@ -295,16 +295,17 @@ function renderHint(type) {
   questionHint.classList.toggle("is-hidden", !QUESTION_HINTS[type]);
 }
 
-// Opciones de la pregunta que va de UML al contexto: el contexto de la propia
-// pregunta más dos `case` de otros símbolos, para que no se aprenda la respuesta.
+// Opciones de la pregunta que va de UML al escenario: el escenario de la propia
+// pregunta más dos de otros símbolos del banco de práctica, con el mismo patrón
+// declarativo, para que la correcta no se distinga por cómo está redactada.
 function explainOptions(question) {
   const distractors = shuffle(
-    Object.keys(symbolFacts)
-      .filter((id) => symbolFacts[id].case && id !== question.symbol)
-      .map((id) => symbolFacts[id].case)
+    practiceQuestions
+      .filter((item) => item.symbol !== question.symbol)
+      .map((item) => item.scenario)
   );
 
-  return shuffle([question.context, distractors[0], distractors[1]]);
+  return shuffle([question.scenario, distractors[0], distractors[1]]);
 }
 
 // Los tres nombres de un símbolo: se toman del banco principal, así las
@@ -314,7 +315,7 @@ function symbolOptions(symbol) {
 }
 
 // Las opciones de la pregunta actual: nombres del glosario (clásico, inversa,
-// caso y contexto), contextos (explicar) o el dibujo de cada símbolo (inversa).
+// caso y escenario), escenarios (explicar) o el dibujo de cada símbolo (inversa).
 function renderOptions(question, type) {
   const options =
     type === "explain-mc" ? explainOptions(question) : symbolOptions(question.symbol);
@@ -382,17 +383,22 @@ function acceptAnswer() {
   acceptButton.classList.add("is-hidden");
 }
 
-// Respuesta escrita a mano: se ignoran mayúsculas y espacios sobrantes
-// («  Composición » cuenta como «composición»).
+// Quita los signos diacríticos («ó» → «o») para comparar sin tildes.
+function stripDiacritics(text) {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+// Respuesta escrita a mano: se ignoran mayúsculas, tildes y espacios sobrantes
+// («  COMPOSICIÓN » cuenta como «composición»).
 function normalizeAnswer(text) {
-  return text.trim().toLowerCase();
+  return stripDiacritics(text.trim().toLowerCase());
 }
 
 // Respuesta correcta de la pregunta actual. Sale del glosario, salvo en las de
-// práctica que piden el contexto del diagrama: ahí es el `context` de la pregunta.
+// práctica que piden el escenario del diagrama: ahí es el `scenario` de la pregunta.
 function correctAnswer(question) {
   return questionType(state.currentIndex) === "explain-mc"
-    ? question.context
+    ? question.scenario
     : symbolFacts[question.symbol].name;
 }
 
