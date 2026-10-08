@@ -8,7 +8,8 @@
    1. DATOS
    --------------------------------------------------------- */
 
-// Dibujo de cada símbolo, en SVG (no necesita servidor).
+// Dibujo de cada símbolo que no es de relación, en SVG (no necesita servidor).
+// Los seis símbolos de relación se generan con `relationFigure` (más abajo).
 const symbolShapes = {
   class: `
     <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de clase">
@@ -29,53 +30,6 @@ const symbolShapes = {
       <rect x="45" y="28" width="110" height="44" fill="#ffffff" stroke="#334155" stroke-width="2.5"></rect>
       <text x="100" y="56" text-anchor="middle" font-size="14" font-family="system-ui, sans-serif"
             fill="#334155" text-decoration="underline">ana: Persona</text>
-    </svg>`,
-
-  composition: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de composición">
-      <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round">
-        <polygon points="55,50 35,35 15,50 35,65" fill="#334155"></polygon>
-        <line x1="55" y1="50" x2="185" y2="50"></line>
-      </g>
-    </svg>`,
-
-  aggregation: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de agregación">
-      <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round">
-        <polygon points="55,50 35,35 15,50 35,65" fill="#ffffff"></polygon>
-        <line x1="55" y1="50" x2="185" y2="50"></line>
-      </g>
-    </svg>`,
-
-  association: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de asociación">
-      <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="35" y1="50" x2="165" y2="50"></line>
-      </g>
-    </svg>`,
-
-  dependency: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de dependencia">
-      <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="35" y1="50" x2="152" y2="50" stroke-dasharray="10 8"></line>
-        <polyline points="140,42 152,50 140,58"></polyline>
-      </g>
-    </svg>`,
-
-  generalization: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de generalización">
-      <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linejoin="round">
-        <line x1="35" y1="50" x2="138" y2="50"></line>
-        <polygon points="138,34 168,50 138,66" fill="#ffffff"></polygon>
-      </g>
-    </svg>`,
-
-  realization: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de realización">
-      <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linejoin="round">
-        <line x1="35" y1="50" x2="138" y2="50" stroke-dasharray="10 8"></line>
-        <polygon points="138,34 168,50 138,66" fill="#ffffff"></polygon>
-      </g>
     </svg>`,
 
   package: `
@@ -136,6 +90,164 @@ const symbolShapes = {
       <text x="100" y="55" text-anchor="middle" font-size="13" font-family="system-ui, sans-serif" fill="#334155">Realizar pedido</text>
     </svg>`
 };
+
+// Los seis símbolos de relación se dibujan entre dos cajas de clase, leyéndose
+// de izquierda a derecha (y dentro de cada caja, de arriba abajo: nombre,
+// atributo y método). En la dificultad "hard" las cajas son neutras —para no
+// delatar la respuesta— y se añaden las multiplicidades; la «1» nunca se
+// dibuja (UML la omite).
+const NEUTRAL_CLASS_LEFT = {
+  name: "Clase A",
+  attribute: "dato: String",
+  method: "operación()"
+};
+
+const NEUTRAL_CLASS_RIGHT = {
+  name: "Clase B",
+  attribute: "dato: String",
+  method: "operación()"
+};
+
+// Configuración de cada figura: textos de la izquierda y de la derecha, glifo
+// del conector y multiplicidades (null = no se dibujan).
+const RELATION_FIGURES = {
+  composition: {
+    label: "Símbolo de composición",
+    left: { name: "Orden", attribute: "total: Decimal", method: "calcular()" },
+    right: { name: "Línea de pedido", attribute: "cantidad: Int", method: "añadir()" },
+    connector: "composition",
+    multiplicity: { left: null, right: "0..*" }
+  },
+  aggregation: {
+    label: "Símbolo de agregación",
+    left: { name: "Equipo", attribute: "nombre: String", method: "jugar()" },
+    right: { name: "Jugador", attribute: "número: Int", method: "marcar()" },
+    connector: "aggregation",
+    multiplicity: { left: "0..1", right: "0..*" }
+  },
+  association: {
+    label: "Símbolo de asociación",
+    left: { name: "Persona", attribute: "carné: String", method: "conducir()" },
+    right: { name: "Vehículo", attribute: "matrícula: String", method: "arrancar()" },
+    connector: "association",
+    multiplicity: { left: "0..*", right: null }
+  },
+  dependency: {
+    label: "Símbolo de dependencia",
+    left: { name: "Factura", attribute: "importe: Decimal", method: "emitir()" },
+    right: { name: "Cliente", attribute: "cuit: String", method: "pagar()" },
+    connector: "dependency",
+    multiplicity: null
+  },
+  generalization: {
+    label: "Símbolo de generalización",
+    left: { name: "Perro", attribute: "raza: String", method: "ladrar()" },
+    right: { name: "Animal", attribute: "edad: Int", method: "comer()" },
+    connector: "generalization",
+    multiplicity: null
+  },
+  realization: {
+    label: "Símbolo de realización",
+    left: { name: "Pagador", attribute: "banco: String", method: "cobrar()" },
+    right: { name: "Cobrable", attribute: "monto: Decimal", method: "cobrar()" },
+    connector: "realization",
+    interfaceRight: true,
+    multiplicity: null
+  }
+};
+
+// Caja de clase con sus tres compartimentos, en orden de lectura.
+function classFigure(x, box, nameStyle) {
+  const centerX = x + 52.5;
+  return `
+      <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linejoin="round">
+        <rect x="${x}" y="24" width="105" height="66"></rect>
+        <line x1="${x}" y1="46" x2="${x + 105}" y2="46"></line>
+        <line x1="${x}" y1="68" x2="${x + 105}" y2="68"></line>
+      </g>
+      <g fill="#334155" font-family="system-ui, sans-serif" text-anchor="middle">
+        <text x="${centerX}" y="39" font-size="11"${nameStyle}>${box.name}</text>
+        <text x="${centerX}" y="61" font-size="9">${box.attribute}</text>
+        <text x="${centerX}" y="83" font-size="9">${box.method}</text>
+      </g>`;
+}
+
+// Línea y glifo del símbolo, entre las dos cajas (de x=109 a x=241).
+function connectorFigure(kind) {
+  const lineStyle =
+    'stroke="#334155" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const line = (x1, x2, dashed) =>
+    `<line x1="${x1}" y1="57" x2="${x2}" y2="57" ${lineStyle}` +
+    (dashed ? ' stroke-dasharray="10 8"' : "") + "></line>";
+  const diamond =
+    '<polygon points="109,57 120,44 131,57 120,70" fill="' +
+    (kind === "composition" ? "#334155" : "#ffffff") +
+    '" stroke="#334155" stroke-width="2.5" stroke-linejoin="round"></polygon>';
+  const triangle =
+    '<polygon points="211,43 241,57 211,71" fill="#ffffff" stroke="#334155" ' +
+    'stroke-width="2.5" stroke-linejoin="round"></polygon>';
+  const arrow =
+    '<polyline points="229,49 241,57 229,65" stroke="#334155" stroke-width="2.5" ' +
+    'fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>';
+
+  switch (kind) {
+    case "composition":
+    case "aggregation":
+      return diamond + line(131, 241, false);
+    case "association":
+      return line(109, 241, false);
+    case "dependency":
+      return line(109, 241, true) + arrow;
+    case "generalization":
+      return line(109, 211, false) + triangle;
+    case "realization":
+      return line(109, 211, true) + triangle;
+    default:
+      return "";
+  }
+}
+
+// Multiplicidad de un extremo, sobre la línea; null no dibuja nada.
+function multiplicityFigure(text, side) {
+  if (!text) {
+    return "";
+  }
+  const x = side === "left" ? 137 : 207;
+  const anchor = side === "left" ? "start" : "end";
+  return `
+      <text x="${x}" y="49" font-size="10" fill="#334155" font-family="system-ui, sans-serif"
+            text-anchor="${anchor}">${text}</text>`;
+}
+
+// Figura de un símbolo de relación para la dificultad actual.
+function relationFigure(config) {
+  const hard = state.difficulty === "hard";
+  const left = hard ? NEUTRAL_CLASS_LEFT : config.left;
+  const right = hard ? NEUTRAL_CLASS_RIGHT : config.right;
+  const interfaceRight = !hard && config.interfaceRight === true;
+  const multiplicity = hard ? config.multiplicity : null;
+  const rightBox = {
+    name: interfaceRight ? "«" + right.name + "»" : right.name,
+    attribute: right.attribute,
+    method: right.method
+  };
+
+  return `
+    <svg viewBox="0 0 350 116" class="relation-svg" role="img" aria-label="${config.label}">
+      ${classFigure(4, left, "")}
+      ${multiplicity ? multiplicityFigure(multiplicity.left, "left") : ""}
+      ${connectorFigure(config.connector)}
+      ${multiplicity ? multiplicityFigure(multiplicity.right, "right") : ""}
+      ${classFigure(241, rightBox, interfaceRight ? ' font-style="italic"' : "")}
+    </svg>`;
+}
+
+// Dibujo de un símbolo: las seis relaciones se generan con `relationFigure`
+// y el resto sale de `symbolShapes`.
+function symbolFigure(symbol) {
+  const config = RELATION_FIGURES[symbol];
+  return config ? relationFigure(config) : symbolShapes[symbol];
+}
 
 // Descripción de cada símbolo: fuente única de verdad de las explicaciones.
 // `syntax` explica cómo se dibuja y `meaning`, qué modela (UML 2.5).
@@ -503,7 +615,7 @@ function renderPrompt(question, type) {
   } else if (type === "case") {
     appendPrompt("scenario", fact.case);
   } else {
-    symbolBox.innerHTML = symbolShapes[question.symbol];
+    symbolBox.innerHTML = symbolFigure(question.symbol);
   }
 }
 
@@ -530,7 +642,7 @@ function renderOptions(question, type) {
 
     if (type === "inverse") {
       button.className = "option-button option-button--symbol";
-      button.innerHTML = symbolShapes[symbolIdByName[option]];
+      button.innerHTML = symbolFigure(symbolIdByName[option]);
     } else {
       button.className = "option-button";
       button.textContent = option;

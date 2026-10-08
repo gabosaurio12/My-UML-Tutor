@@ -175,6 +175,10 @@ button {
   height: auto;
 }
 
+.symbol-box svg.relation-svg {
+  max-width: 360px;
+}
+
 .question-name {
   width: 100%;
   margin: 0;
@@ -254,6 +258,10 @@ button {
   width: 100%;
   max-width: 280px;
   height: auto;
+}
+
+.option-button--symbol svg.relation-svg {
+  max-width: 320px;
 }
 
 /* ---------- Respuesta abierta ---------- */
@@ -403,6 +411,42 @@ button {
 .record-message {
   margin: 0 0 22px;
   color: var(--color-muted);
+}
+
+/* ---------- Pie de página ---------- */
+
+.site-footer {
+  max-width: 640px;
+  margin: 32px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.privacy-box {
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.privacy-box summary {
+  cursor: pointer;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.privacy-text {
+  margin: 8px 0 0;
+}
+
+.site-footer p {
+  margin: 6px 0;
+}
+
+.site-footer a {
+  color: var(--color-primary);
+  overflow-wrap: anywhere;
 }
 
 /* ---------- Móvil ---------- */
