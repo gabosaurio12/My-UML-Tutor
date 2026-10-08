@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutor de UML</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <h1>Tutor de UML</h1>
+    <p class="subtitle">Aprende la sintaxis y el significado de los símbolos de UML</p>
+  </header>
+
+  <main>
+
+    <!-- Pantalla de inicio -->
+    <section id="homeScreen" class="screen card">
+      <p class="intro">
+        Una sesión son <strong>10 preguntas</strong>. En <strong>Normal</strong> verás un
+        símbolo de UML y elegirás su nombre entre tres opciones; en <strong>Difícil</strong>
+        tendrás que elegir el símbolo, escribir el nombre o resolver un caso. Cada acierto
+        suma 1 punto.
+      </p>
+
+      <div class="difficulty-field">
+        <label class="difficulty-label" for="difficultySelect">Dificultad</label>
+        <select id="difficultySelect" class="difficulty-select">
+          <option value="normal">Normal</option>
+          <option value="hard">Difícil</option>
+        </select>
+      </div>
+
+      <button id="startButton" type="button" class="primary-button">
+        Iniciar sesión de estudio
+      </button>
+
+      <h2 class="section-title">Puntajes más altos</h2>
+      <ol id="scoresList" class="scores-list"></ol>
+      <p id="emptyScores" class="empty-message">
+        Todavía no hay puntajes. ¡Inicia una sesión!
+      </p>
+    </section>
+
+    <!-- Pantalla de preguntas -->
+    <section id="quizScreen" class="screen card is-hidden">
+      <div class="quiz-header">
+        <span id="questionCounter">Pregunta 1 de 10</span>
+        <span id="scoreValue">Puntos: 0</span>
+      </div>
+
+      <div id="symbolBox" class="symbol-box"></div>
+
+      <p id="questionHint" class="question-hint is-hidden"></p>
+
+      <div id="answerBox" class="answer-box is-hidden">
+        <label class="answer-label" for="answerInput">Escribe el nombre del símbolo</label>
+        <input id="answerInput" class="answer-input" type="text" autocomplete="off"
+               autocapitalize="none" spellcheck="false">
+      </div>
+
+      <div id="optionsList" class="options"></div>
+
+      <button id="acceptButton" type="button" class="primary-button" disabled>
+        Aceptar
+      </button>
+
+      <div id="feedbackBox" class="feedback is-hidden">
+        <p id="feedbackTitle" class="feedback-title"></p>
+        <div id="feedbackBody" class="feedback-body"></div>
+        <button id="nextButton" type="button" class="primary-button">
+          Siguiente
+        </button>
+      </div>
+    </section>
+
+    <!-- Pantalla de resultado -->
+    <section id="resultScreen" class="screen card is-hidden">
+      <h2 class="section-title">Sesión terminada</h2>
+      <p id="finalScoreText" class="final-score"></p>
+      <p id="recordText" class="record-message"></p>
+      <button id="homeButton" type="button" class="primary-button">
+        Volver al inicio
+      </button>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
