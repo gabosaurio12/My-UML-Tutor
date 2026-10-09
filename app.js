@@ -17,7 +17,7 @@ const state = {
   score: 0, // puntos de la sesión actual
   selectedOption: null, // opción (o texto) que ha marcado el usuario
   isAccepted: false, // si ya ha pulsado "Aceptar"
-  difficulty: "normal", // elegida en el inicio: "normal" | "hard" | "practice"
+  difficulty: "normal", // elegida en el inicio: una de las claves de DIFFICULTIES
   sessionScores: [] // puntajes de esta página: { score, difficulty } (solo en memoria)
 };
 
@@ -55,28 +55,40 @@ const recordText = document.getElementById("recordText");
    3. PUNTUACIONES (localStorage)
    --------------------------------------------------------- */
 
-// Récords de las tres dificultades. Los formatos anteriores (un solo número, o
-// solo normal y hard) se completan con ceros en las dificultades que falten.
+// Récord de cada dificultad, todos a cero.
+function emptyRecords() {
+  return { normal: 0, hard: 0, practiceBasic: 0, practiceComplete: 0 };
+}
+
+function numberOrZero(value) {
+  return Number.isFinite(value) ? value : 0;
+}
+
+// Récords de las cuatro dificultades, migrando los formatos anteriores: un solo
+// número era el récord de Normal, y la clave antigua `practice` —la de la
+// práctica única que había, con un banco mixto— pasa a `practiceComplete`, que
+// es su sucesora más cercana. Los registros ya guardados con las cuatro claves
+// mandan sobre ella, así que no se pierde ningún récord.
 function loadRecords() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === null) {
-      return { normal: 0, hard: 0, practice: 0 };
+      return emptyRecords();
     }
 
     const parsed = JSON.parse(stored);
-    if (parsed !== null && typeof parsed === "object") {
-      return {
-        normal: Number.isFinite(parsed.normal) ? parsed.normal : 0,
-        hard: Number.isFinite(parsed.hard) ? parsed.hard : 0,
-        practice: Number.isFinite(parsed.practice) ? parsed.practice : 0
-      };
+    if (parsed === null || typeof parsed !== "object") {
+      return Number.isFinite(parsed) ? { ...emptyRecords(), normal: parsed } : emptyRecords();
     }
-    return Number.isFinite(parsed)
-      ? { normal: parsed, hard: 0, practice: 0 }
-      : { normal: 0, hard: 0, practice: 0 };
+
+    return {
+      normal: numberOrZero(parsed.normal),
+      hard: numberOrZero(parsed.hard),
+      practiceBasic: numberOrZero(parsed.practiceBasic),
+      practiceComplete: numberOrZero(parsed.practiceComplete) || numberOrZero(parsed.practice)
+    };
   } catch (error) {
-    return { normal: 0, hard: 0, practice: 0 };
+    return emptyRecords();
   }
 }
 
@@ -193,22 +205,34 @@ function isOpenType(type) {
   return type === "open" || type.indexOf("-open") !== -1;
 }
 
-// Tipo de la pregunta `index`: la clásica en Normal, en Difícil las tres
-// alternadas (4 inversas, 3 abiertas y 3 de caso) y en Práctica los cuatro
-// formatos alternados (3 escenario-abiertas, 3 escenario-opción, 2 explicar).
-function questionType(index) {
-  if (state.difficulty === "hard") {
-    return HARD_QUESTION_TYPES[index % HARD_QUESTION_TYPES.length];
-  }
-  if (state.difficulty === "practice") {
-    return PRACTICE_QUESTION_TYPES[index % PRACTICE_QUESTION_TYPES.length];
-  }
-  return "symbol";
+// ¿La pregunta se responde sobre el diagrama (y no sobre el escenario escrito)?
+function isDiagramType(type) {
+  return type === "explain-open" || type === "explain-mc";
 }
 
-// Banco de la dificultad elegida: la práctica usa sus escenarios propios.
+// Las cuatro dificultades del combo, una fila cada una: qué banco usa y en qué
+// orden se repiten sus tipos de pregunta. El tamaño de la sesión es el del banco,
+// así que no hace falta repetirlo aquí. Añadir una dificultad es añadir una fila.
+const DIFFICULTIES = {
+  normal: { bank: questions, types: ["symbol"] },
+  hard: { bank: hardQuestions, types: HARD_QUESTION_TYPES },
+  practiceBasic: { bank: practiceBasicQuestions, types: PRACTICE_QUESTION_TYPES },
+  practiceComplete: { bank: practiceCompleteQuestions, types: PRACTICE_QUESTION_TYPES }
+};
+
+// Tipo de la pregunta `index`: la tabla de dificultades decide cuál se repite.
+// Normal solo tiene la clásica; Difícil alterna inversa, abierta y caso (5/5/5
+// en quince preguntas) y las dos prácticas los cuatro formatos (3/3/2/2 en diez,
+// 8/8/7/7 en treinta).
+function questionType(index) {
+  const types = DIFFICULTIES[state.difficulty].types;
+  return types[index % types.length];
+}
+
+// Banco de la dificultad elegida: cada una tiene el suyo, y los dos bancos de
+// práctica no comparten ni un texto con los demás.
 function sessionBank() {
-  return state.difficulty === "practice" ? practiceQuestions : questions;
+  return DIFFICULTIES[state.difficulty].bank;
 }
 
 function startSession() {
@@ -271,14 +295,12 @@ function renderPrompt(question, type) {
   } else if (type === "case" || type === "context-open" || type === "context-mc") {
     appendPrompt("scenario", type === "case" ? fact.case : question.scenario);
   } else {
-    // En Práctica el diagrama va con cajas neutras: el alumno tiene que leer el
-    // conector y el significado, no los nombres de las clases. Normal y Difícil
-    // conservan los suyos.
-    symbolBox.innerHTML = symbolFigure(
-      question.symbol,
-      state.difficulty,
-      state.difficulty === "practice"
-    );
+    // Solo las prácticas muestran un diagrama (tipos `explain`), y therein sale
+    // del banco de práctica, con el contexto visual que le haga falta al
+    // escenario. En las demás dificultades se muestra el símbolo tal cual.
+    symbolBox.innerHTML = isDiagramType(type)
+      ? practiceFigure(question.symbol)
+      : symbolFigure(question.symbol, state.difficulty);
   }
 }
 
@@ -296,22 +318,31 @@ function renderHint(type) {
 }
 
 // Opciones de la pregunta que va de UML al escenario: el escenario de la propia
-// pregunta más dos de otros símbolos del banco de práctica, con el mismo patrón
+// pregunta más dos del banco de práctica en curso, con el mismo patrón
 // declarativo, para que la correcta no se distinga por cómo está redactada.
+// Los tres símbolos son distintos: el banco completo tiene símbolos con dos
+// escenarios (los gemelos), así que sin este filtro dos opciones podrían ser del
+// mismo símbolo y quedar equivalentes entre sí.
 function explainOptions(question) {
-  const distractors = shuffle(
-    practiceQuestions
-      .filter((item) => item.symbol !== question.symbol)
-      .map((item) => item.scenario)
-  );
+  const picked = [];
+  const used = [question.symbol];
+  const candidates = shuffle(sessionBank().filter((item) => item.symbol !== question.symbol));
 
-  return shuffle([question.scenario, distractors[0], distractors[1]]);
+  for (let i = 0; i < candidates.length && picked.length < 2; i++) {
+    if (used.indexOf(candidates[i].symbol) >= 0) {
+      continue;
+    }
+    picked.push(candidates[i].scenario);
+    used.push(candidates[i].symbol);
+  }
+
+  return shuffle(picked.concat([question.scenario]));
 }
 
-// Los tres nombres de un símbolo: se toman del banco principal, así las
-// preguntas de práctica reutilizan los mismos distractores.
+// Los tres nombres de un símbolo: salen del mapa común a los cuatro bancos, así
+// un símbolo que se pregunta en varias dificultades no repite sus distractores.
 function symbolOptions(symbol) {
-  return questions.find((question) => question.symbol === symbol).options;
+  return NAME_OPTIONS[symbol];
 }
 
 // Las opciones de la pregunta actual: nombres del glosario (clásico, inversa,
@@ -394,17 +425,22 @@ function normalizeAnswer(text) {
   return stripDiacritics(text.trim().toLowerCase());
 }
 
+// ¿La respuesta correcta de la pregunta actual es el escenario y no el nombre
+// del símbolo? Solo ocurre en las preguntas `explain-mc` de las prácticas.
+function isScenarioAnswer() {
+  return questionType(state.currentIndex) === "explain-mc";
+}
+
 // Respuesta correcta de la pregunta actual. Sale del glosario, salvo en las de
 // práctica que piden el escenario del diagrama: ahí es el `scenario` de la pregunta.
 function correctAnswer(question) {
-  return questionType(state.currentIndex) === "explain-mc"
-    ? question.scenario
-    : symbolFacts[question.symbol].name;
+  return isScenarioAnswer() ? question.scenario : symbolFacts[question.symbol].name;
 }
 
 // Construye los trozos de la explicación a partir del glosario `symbolFacts`.
 // Solo se explica el símbolo correcto; si el usuario falla, el párrafo inicial
-// pone su respuesta delante de la correcta.
+// pone la respuesta correcta por delante y, si la correcta era un escenario,
+// se añade el nombre del símbolo: si no, nunca se diría qué se estaba dibujando.
 function buildFeedback(question, chosenOption) {
   const fact = symbolFacts[question.symbol];
   const correct = correctAnswer(question);
@@ -413,13 +449,8 @@ function buildFeedback(question, chosenOption) {
   return {
     isCorrect: isCorrect,
     verdict: isCorrect ? "¡Correcto!" : "¡Incorrecto!",
-    lead: isCorrect
-      ? null
-      : "Tu respuesta: «" +
-        chosenOption.trim() +
-        "». La respuesta correcta es «" +
-        correct +
-        "».",
+    lead: isCorrect ? null : "La respuesta correcta es «" + correct + "».",
+    name: !isCorrect && isScenarioAnswer() ? fact.name : null,
     syntax: fact.syntax,
     meaning: fact.meaning
   };
@@ -438,6 +469,9 @@ function renderFeedback(feedback) {
     lead.className = "feedback-lead";
     lead.textContent = feedback.lead;
     feedbackBody.appendChild(lead);
+  }
+  if (feedback.name) {
+    feedbackBody.appendChild(createFeedbackBlock("Símbolo:", [feedback.name]));
   }
   feedbackBody.appendChild(createFeedbackBlock("Cómo se dibuja:", [feedback.syntax]));
   feedbackBody.appendChild(createFeedbackBlock("Qué modela:", [feedback.meaning]));

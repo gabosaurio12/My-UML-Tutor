@@ -179,6 +179,12 @@ button {
   max-width: 360px;
 }
 
+/* Las líneas de vida son más anchas que altas y su texto es pequeño: un poco
+   más de ancho para que las cabezas y las etiquetas se lean. */
+.symbol-box svg.interaction-svg {
+  max-width: 340px;
+}
+
 .question-name {
   width: 100%;
   margin: 0;
@@ -262,6 +268,10 @@ button {
 
 .option-button--symbol svg.relation-svg {
   max-width: 320px;
+}
+
+.option-button--symbol svg.interaction-svg {
+  max-width: 300px;
 }
 
 /* ---------- Respuesta abierta ---------- */

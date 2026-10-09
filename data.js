@@ -70,6 +70,31 @@ const symbolShapes = {
       </g>
     </svg>`,
 
+  artifact: `
+    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de artefacto">
+      <g stroke="#334155" stroke-width="2.5" fill="#ffffff" stroke-linejoin="round">
+        <rect x="45" y="12" width="110" height="76"></rect>
+        <line x1="45" y1="36" x2="155" y2="36"></line>
+      </g>
+      <g fill="#334155" font-family="system-ui, sans-serif" text-anchor="middle">
+        <text x="100" y="30" font-size="10" font-style="italic">&#171;artifact&#187;</text>
+        <text x="100" y="64" font-size="12">aplicacion.war</text>
+      </g>
+    </svg>`,
+
+  communicationPath: `
+    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de ruta de comunicación">
+      <g stroke="#334155" stroke-width="2.5" stroke-linejoin="round">
+        <polygon points="55,20 85,35 55,50 25,35" fill="#e2e8f0"></polygon>
+        <polygon points="25,35 55,50 55,66 25,51" fill="#ffffff"></polygon>
+        <polygon points="85,35 55,50 55,66 85,51" fill="#f1f5f9"></polygon>
+        <polygon points="145,20 175,35 145,50 115,35" fill="#e2e8f0"></polygon>
+        <polygon points="115,35 145,50 145,66 115,51" fill="#ffffff"></polygon>
+        <polygon points="175,35 145,50 145,66 175,51" fill="#f1f5f9"></polygon>
+        <line x1="85" y1="42" x2="115" y2="42"></line>
+      </g>
+    </svg>`,
+
   node: `
     <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de nodo">
       <g stroke="#334155" stroke-width="2.5" stroke-linejoin="round">
@@ -109,6 +134,44 @@ const NEUTRAL_CLASS_RIGHT = {
   name: "Clase B",
   attribute: "dato: String",
   method: "operación()"
+};
+
+// Los símbolos de los diagramas de interacción (comunicación y secuencia) se
+// dibujan con líneas de vida: una cabeza con el nombre del participante y una
+// línea vertical que baja. En la dificultad "hard" y en los diagramas de
+// práctica las cabezas van neutras, por el mismo motivo que las cajas de clase.
+const NEUTRAL_PARTICIPANT_LEFT = { name: "Participante A" };
+const NEUTRAL_PARTICIPANT_RIGHT = { name: "Participante B" };
+
+// Configuración de cada figura de interacción: las cabezas de los participantes
+// y qué se dibuja entre ellas (`none`, `bar`, `arrow` o `loop`).
+const INTERACTION_FIGURES = {
+  lifeline: {
+    label: "Símbolo de línea de vida",
+    left: { name: "Usuario" },
+    right: null,
+    between: "none"
+  },
+  execution: {
+    label: "Símbolo de ejecución",
+    left: { name: "Usuario" },
+    right: null,
+    between: "bar"
+  },
+  selfMessage: {
+    label: "Símbolo de mensaje a sí mismo",
+    left: { name: "Usuario" },
+    right: null,
+    between: "loop",
+    text: "reintentar()"
+  },
+  message: {
+    label: "Símbolo de mensaje",
+    left: { name: "Cliente" },
+    right: { name: "Servicio" },
+    between: "arrow",
+    text: "reservar()"
+  }
 };
 
 // Configuración de cada figura: textos de la izquierda y de la derecha, glifo
@@ -263,11 +326,107 @@ function relationFigure(config, difficulty, neutral) {
     </svg>`;
 }
 
-// Dibujo de un símbolo: las seis relaciones se generan con `relationFigure`
-// y el resto sale de `symbolShapes`.
+// Línea de vida de los diagramas de interacción: cabeza con el nombre centrada
+// sobre la línea vertical que baja. `centerX` es el eje de la línea de vida.
+const LIFELINE_HEAD_TOP = 14;
+const LIFELINE_HEAD_HEIGHT = 30;
+const LIFELINE_HEAD_WIDTH = 105;
+const LIFELINE_BOTTOM = 180;
+
+function lifelineFigure(centerX, head) {
+  const left = centerX - LIFELINE_HEAD_WIDTH / 2;
+
+  return `
+      <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linejoin="round">
+        <rect x="${left}" y="${LIFELINE_HEAD_TOP}" width="${LIFELINE_HEAD_WIDTH}"
+              height="${LIFELINE_HEAD_HEIGHT}"></rect>
+        <line x1="${centerX}" y1="${LIFELINE_HEAD_TOP + LIFELINE_HEAD_HEIGHT}"
+              x2="${centerX}" y2="${LIFELINE_BOTTOM}"></line>
+      </g>
+      <text x="${centerX}" y="${LIFELINE_HEAD_TOP + 20}" text-anchor="middle" font-size="11"
+            fill="#334155" font-family="system-ui, sans-serif">${head}</text>`;
+}
+
+// Lo que va entre las líneas de vida: la barra de la ejecución sobre su propia
+// línea de vida, la flecha del mensaje entre dos y el bucle del mensaje a sí
+// mismo. `text` es la etiqueta de la operación, cuando la lleva.
+function interactionBridge(kind, text, from, to) {
+  const middle = (from + to) / 2;
+  const label = text
+    ? `<text x="${middle}" y="88" text-anchor="middle" font-size="10" fill="#334155"
+            font-family="system-ui, sans-serif">${text}</text>`
+    : "";
+
+  if (kind === "bar") {
+    return `
+      <rect x="${from - 5.5}" y="80" width="11" height="62" fill="#e2e8f0"
+            stroke="#334155" stroke-width="2.5"></rect>`;
+  }
+
+  if (kind === "arrow") {
+    return (
+      label +
+      `
+      <line x1="${from}" y1="100" x2="${to - 12}" y2="100" stroke="#334155"
+            stroke-width="2.5"></line>
+      <polyline points="${to - 20},92 ${to},100 ${to - 20},108" stroke="#334155"
+            stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>`
+    );
+  }
+
+  if (kind === "loop") {
+    const turn = from + 90;
+    return (
+      label +
+      `
+      <polyline points="${from},100 ${turn},100 ${turn},136 ${from + 14},136" stroke="#334155"
+            stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="${from + 22},128 ${from + 8},136 ${from + 22},144" stroke="#334155"
+            stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>`
+    );
+  }
+
+  return "";
+}
+
+// Figura de un símbolo de interacción. Con `neutral` las cabezas van siempre
+// como «Participante A»/«B», para que el símbolo se lea por su forma y no por
+// el nombre (igual que las cajas neutras del diagrama de clases).
+function interactionFigure(config, neutral) {
+  const useNeutral = neutral === true;
+  const left = useNeutral ? NEUTRAL_PARTICIPANT_LEFT : config.left;
+  const right = useNeutral ? NEUTRAL_PARTICIPANT_RIGHT : config.right;
+  const hasSecond = config.right !== null;
+  const leftCenter = hasSecond ? 90 : 175;
+  const rightCenter = 260;
+  const bridge = interactionBridge(
+    config.between,
+    useNeutral ? "operación()" : config.text,
+    leftCenter,
+    hasSecond ? rightCenter : leftCenter + 90
+  );
+
+  return `
+    <svg viewBox="0 0 350 200" class="interaction-svg" role="img" aria-label="${config.label}">
+      ${lifelineFigure(leftCenter, left.name)}
+      ${hasSecond ? lifelineFigure(rightCenter, right.name) : ""}
+      ${bridge}
+    </svg>`;
+}
+
+// Figura de un símbolo: las seis relaciones se generan con `relationFigure`, las
+// de interacción con `interactionFigure` y el resto sale de `symbolShapes`.
 function symbolFigure(symbol, difficulty, neutral) {
-  const config = RELATION_FIGURES[symbol];
-  return config ? relationFigure(config, difficulty, neutral) : symbolShapes[symbol];
+  const relation = RELATION_FIGURES[symbol];
+  const interaction = INTERACTION_FIGURES[symbol];
+
+  if (relation) {
+    return relationFigure(relation, difficulty, neutral);
+  }
+  if (interaction) {
+    return interactionFigure(interaction, neutral === true || difficulty === "hard");
+  }
+  return symbolShapes[symbol];
 }
 
 // Descripción de cada símbolo: fuente única de verdad de las explicaciones.
@@ -361,7 +520,9 @@ const symbolFacts = {
   actor: {
     name: "Actor",
     syntax: "Figura de palo con cabeza, tronco, brazos y piernas.",
-    meaning: "Rol de un usuario u otro sistema que interactúa con el sistema que se modela."
+    meaning: "Rol de un usuario u otro sistema que interactúa con el sistema que se modela.",
+    case: "El cliente reserva online y, además, un cajero cobra en mostrador: cada uno hace " +
+      "cosas distintas en el mostrador de reservas."
   },
   node: {
     name: "Nodo",
@@ -371,12 +532,53 @@ const symbolFacts = {
   interfaceLollipop: {
     name: "Interfaz",
     syntax: "Círculo al final de la línea que sale de un elemento.",
-    meaning: "Contrato de operaciones que un elemento ofrece a otros, sin describir su implementación."
+    meaning: "Contrato de operaciones que un elemento ofrece a otros, sin describir su implementación.",
+    case: "El módulo de pagos declara qué operaciones ofrece y los controladores las usan sin saber " +
+      "cómo funcionan por dentro."
   },
   useCase: {
     name: "Caso de uso",
     syntax: "Elipse con el nombre de la acción en su interior.",
-    meaning: "Objetivo concreto que un actor alcanza interactuando con el sistema."
+    meaning: "Objetivo concreto que un actor alcanza interactuando con el sistema.",
+    case: "Hay que documentar «consultar el historial de pedidos» como una de las cosas que el " +
+      "cliente puede hacer en el mostrador."
+  },
+  lifeline: {
+    name: "Línea de vida",
+    syntax: "Rectángulo con el nombre del participante y una línea vertical que baja.",
+    meaning: "Participante de una interacción, con su vida dibujada a lo largo de la conversación.",
+    case: "El cliente y el servidor participan en la misma conversación y los dos tienen que verse " +
+      "durante todo el intercambio."
+  },
+  message: {
+    name: "Mensaje",
+    syntax: "Línea horizontal con flecha entre dos líneas de vida, con la operación como etiqueta.",
+    meaning: "Comunicación de una interacción: quien envía, quien recibe y lo que se envía.",
+    case: "El cliente pide una reserva al servidor y se queda esperando su respuesta antes de seguir."
+  },
+  execution: {
+    name: "Ejecución",
+    syntax: "Barra rectangular fina y vertical sobre una línea de vida.",
+    meaning:
+      "Periodo en que el participante ejecuta una acción; lo habitual es llamarla activación.",
+    case: "El servidor tarda diez segundos en responder y durante ese tiempo sigue ocupado en algo."
+  },
+  selfMessage: {
+    name: "Mensaje a sí mismo",
+    syntax: "Flecha que sale de una línea de vida y vuelve a la misma línea de vida.",
+    meaning: "Mensaje cuyo emisor y su receptor son el mismo participante.",
+    case: "El servidor, al fallar el pago, vuelve a invocar su propia operación para reintentarlo."
+  },
+  artifact: {
+    name: "Artefacto",
+    syntax: "Rectángulo con el nombre y la palabra «artifact» entre comillas angulares.",
+    meaning:
+      "Pieza física de software o de datos que se despliega dentro de un nodo, como un .war o un .jar."
+  },
+  communicationPath: {
+    name: "Ruta de comunicación",
+    syntax: "Línea continua entre dos nodos, sin punta en el extremo.",
+    meaning: "Ruta por la que dos nodos de un despliegue se comunican entre sí."
   }
 };
 
@@ -386,20 +588,79 @@ Object.keys(symbolFacts).forEach((id) => {
   symbolIdByName[symbolFacts[id].name] = id;
 });
 
-// Las 10 preguntas de la sesión: el símbolo que se muestra y sus tres opciones.
-// La respuesta correcta sale del glosario (`symbolFacts`), nunca se escribe a mano.
+// Los tres nombres que se ofrecen al elegir un símbolo: el correcto y dos que
+// se le parecen. Vive por símbolo y no dentro del banco porque un mismo símbolo
+// puede aparecer en varias dificultades, y porque cada banco solo dice qué
+// símbolos trae. Cada opción coincide carácter a carácter con un `name` del
+// glosario, que es de donde sale además la respuesta correcta.
+const NAME_OPTIONS = {
+  class: ["Clase", "Objeto", "Actor"],
+  object: ["Objeto", "Clase", "Interfaz"],
+  composition: ["Composición", "Agregación", "Nota"],
+  aggregation: ["Agregación", "Composición", "Nodo"],
+  association: ["Asociación", "Dependencia", "Caso de uso"],
+  dependency: ["Dependencia", "Asociación", "Nota"],
+  generalization: ["Generalización", "Realización", "Nodo"],
+  realization: ["Realización", "Generalización", "Caso de uso"],
+  package: ["Paquete", "Componente", "Actor"],
+  useCase: ["Caso de uso", "Actor", "Clase"],
+  actor: ["Actor", "Caso de uso", "Nodo"],
+  interfaceLollipop: ["Interfaz", "Clase", "Paquete"],
+  lifeline: ["Línea de vida", "Mensaje", "Ejecución"],
+  message: ["Mensaje", "Línea de vida", "Mensaje a sí mismo"],
+  execution: ["Ejecución", "Línea de vida", "Nodo"],
+  selfMessage: ["Mensaje a sí mismo", "Mensaje", "Línea de vida"],
+  component: ["Componente", "Paquete", "Interfaz"],
+  node: ["Nodo", "Componente", "Artefacto"],
+  artifact: ["Artefacto", "Nodo", "Interfaz"],
+  communicationPath: ["Ruta de comunicación", "Asociación", "Dependencia"]
+};
+
+// Una pregunta de los bancos que no llevan escenario solo necesita su símbolo:
+// el enunciado, las tres opciones y la explicación salen del glosario y de
+// `NAME_OPTIONS`.
+function symbolQuestion(symbol) {
+  return { symbol: symbol };
+}
+
+// Banco de *Normal*: UML básico (diagramas de clases con sus objetos, de casos
+// de uso y de paquetes, con todas sus relaciones). Son 11 preguntas, las once
+// que caben del conjunto de doce símbolos: fuera `interfaceLollipop`, que se
+// pregunta en la práctica completa, y `note`, que solo es distractor.
 const questions = [
-  { symbol: "class", options: ["Clase", "Objeto", "Actor"] },
-  { symbol: "object", options: ["Objeto", "Clase", "Interfaz"] },
-  { symbol: "composition", options: ["Composición", "Agregación", "Nota"] },
-  { symbol: "aggregation", options: ["Agregación", "Composición", "Nodo"] },
-  { symbol: "association", options: ["Asociación", "Dependencia", "Caso de uso"] },
-  { symbol: "dependency", options: ["Dependencia", "Asociación", "Nota"] },
-  { symbol: "package", options: ["Paquete", "Componente", "Actor"] },
-  { symbol: "component", options: ["Componente", "Paquete", "Interfaz"] },
-  { symbol: "generalization", options: ["Generalización", "Realización", "Nodo"] },
-  { symbol: "realization", options: ["Realización", "Generalización", "Caso de uso"] }
-];
+  "class",
+  "object",
+  "package",
+  "useCase",
+  "actor",
+  "composition",
+  "aggregation",
+  "association",
+  "dependency",
+  "generalization",
+  "realization"
+].map(symbolQuestion);
+
+// Banco de *Difícil*: UML intermedio, es decir el básico más los diagramas de
+// comunicación y de secuencia (15 preguntas de 16 símbolos: `interfaceLollipop`
+// se queda fuera, como en *Normal*, y se pregunta en la práctica completa).
+const hardQuestions = [
+  "class",
+  "object",
+  "package",
+  "useCase",
+  "actor",
+  "composition",
+  "aggregation",
+  "association",
+  "dependency",
+  "generalization",
+  "realization",
+  "lifeline",
+  "message",
+  "execution",
+  "selfMessage"
+].map(symbolQuestion);
 
 // El banco de la dificultad de práctica vive en `data-practice.js`: cada
 // dificultad tiene sus propios casos o escenarios y no comparten textos.
