@@ -79,6 +79,11 @@ main {
   color: var(--color-muted);
 }
 
+.intro-list {
+  margin: 0 0 20px;
+  color: var(--color-muted);
+}
+
 .section-title {
   margin: 28px 0 12px;
   font-size: 1.1rem;
