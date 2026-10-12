@@ -185,6 +185,12 @@ button {
   max-width: 340px;
 }
 
+/* Los diagramas de casos de uso tienen frontera, casos y actores: necesitan más
+   ancho que un símbolo suelto para que los nombres de las elipses se lean. */
+.symbol-box svg.usecase-svg {
+  max-width: 420px;
+}
+
 .question-name {
   width: 100%;
   margin: 0;
@@ -272,6 +278,12 @@ button {
 
 .option-button--symbol svg.interaction-svg {
   max-width: 300px;
+}
+
+/* Tres diagramas de casos de uso en fila: cada uno se estrecha un poco para que
+   quepan los tres en pantallas pequeñas. */
+.option-button--symbol svg.usecase-svg {
+  max-width: 260px;
 }
 
 /* ---------- Respuesta abierta ---------- */

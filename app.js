@@ -57,18 +57,19 @@ const recordText = document.getElementById("recordText");
 
 // Récord de cada dificultad, todos a cero.
 function emptyRecords() {
-  return { normal: 0, hard: 0, practiceBasic: 0, practiceComplete: 0 };
+  return { normal: 0, hard: 0, practiceBasic: 0, practiceComplete: 0, useCase: 0 };
 }
 
 function numberOrZero(value) {
   return Number.isFinite(value) ? value : 0;
 }
 
-// Récords de las cuatro dificultades, migrando los formatos anteriores: un solo
+// Récords de las cinco dificultades, migrando los formatos anteriores: un solo
 // número era el récord de Normal, y la clave antigua `practice` —la de la
 // práctica única que había, con un banco mixto— pasa a `practiceComplete`, que
 // es su sucesora más cercana. Los registros ya guardados con las cuatro claves
-// mandan sobre ella, así que no se pierde ningún récord.
+// mandan sobre ella, así que no se pierde ningún récord. `useCase` no existía
+// antes: un registro guardado sin esa clave simplemente vale cero.
 function loadRecords() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -85,7 +86,8 @@ function loadRecords() {
       normal: numberOrZero(parsed.normal),
       hard: numberOrZero(parsed.hard),
       practiceBasic: numberOrZero(parsed.practiceBasic),
-      practiceComplete: numberOrZero(parsed.practiceComplete) || numberOrZero(parsed.practice)
+      practiceComplete: numberOrZero(parsed.practiceComplete) || numberOrZero(parsed.practice),
+      useCase: numberOrZero(parsed.useCase)
     };
   } catch (error) {
     return emptyRecords();
@@ -188,6 +190,12 @@ const HARD_QUESTION_TYPES = ["inverse", "open", "case"];
 // escenario), cada uno con sus dos formatos de respuesta.
 const PRACTICE_QUESTION_TYPES = ["context-open", "context-mc", "explain-open", "explain-mc"];
 
+// Tipos del modo de diagramas de casos de uso: modelar la situación, nombrar la
+// relación y razonar sobre el diagrama completo. La fila de DIFFICULTIES los
+// declara como los demás, pero aquí cada pregunta lleva su tipo (`question.type`),
+// porque las de nombre son abiertas y no valen para una posición cerrada.
+const USE_CASE_QUESTION_TYPES = ["usecase-model", "usecase-name", "usecase-reason"];
+
 // Ayuda que se muestra sobre las opciones (vacío en el tipo clásico).
 const QUESTION_HINTS = {
   symbol: "",
@@ -197,12 +205,15 @@ const QUESTION_HINTS = {
   "context-open": "Lee el escenario y escribe el nombre de lo que representa en UML.",
   "context-mc": "Lee el escenario y elige el elemento o relación que representa.",
   "explain-open": "Mira el diagrama y escribe el nombre de lo que muestra.",
-  "explain-mc": "Mira el diagrama y elige el escenario que representa."
+  "explain-mc": "Mira el diagrama y elige el escenario que representa.",
+  "usecase-model": "Lee la situación y elige el diagrama que la modela.",
+  "usecase-name": "Mira el diagrama y escribe el nombre de la relación.",
+  "usecase-reason": "Mira el diagrama y elige la respuesta correcta."
 };
 
 // ¿La pregunta se responde escribiendo en el campo de texto?
 function isOpenType(type) {
-  return type === "open" || type.indexOf("-open") !== -1;
+  return type === "open" || type === "usecase-name" || type.indexOf("-open") !== -1;
 }
 
 // ¿La pregunta se responde sobre el diagrama (y no sobre el escenario escrito)?
@@ -210,21 +221,33 @@ function isDiagramType(type) {
   return type === "explain-open" || type === "explain-mc";
 }
 
-// Las cuatro dificultades del combo, una fila cada una: qué banco usa y en qué
+// Las cinco dificultades del combo, una fila cada una: qué banco usa y en qué
 // orden se repiten sus tipos de pregunta. El tamaño de la sesión es el del banco,
 // así que no hace falta repetirlo aquí. Añadir una dificultad es añadir una fila.
 const DIFFICULTIES = {
   normal: { bank: questions, types: ["symbol"] },
   hard: { bank: hardQuestions, types: HARD_QUESTION_TYPES },
   practiceBasic: { bank: practiceBasicQuestions, types: PRACTICE_QUESTION_TYPES },
-  practiceComplete: { bank: practiceCompleteQuestions, types: PRACTICE_QUESTION_TYPES }
+  practiceComplete: { bank: practiceCompleteQuestions, types: PRACTICE_QUESTION_TYPES },
+  useCase: { bank: useCaseQuestions, types: USE_CASE_QUESTION_TYPES }
 };
 
 // Tipo de la pregunta `index`: la tabla de dificultades decide cuál se repite.
 // Normal solo tiene la clásica; Difícil alterna inversa, abierta y caso (5/5/5
 // en quince preguntas) y las dos prácticas los cuatro formatos (3/3/2/2 en diez,
 // 8/8/7/7 en treinta).
+//
+// Los bancos de siempre se apoyan en que todas sus preguntas valen para
+// cualquier tipo, y por eso el orden puede decidirlo la posición. El de
+// diagramas de casos de uso no cumple eso: sus preguntas de nombre son abiertas
+// y no tienen opciones, así que si ocuparan la posición de una cerrada no habría
+// nada que elegir. Por eso su tipo viaja con la pregunta y la posición no manda.
 function questionType(index) {
+  const question = state.sessionQuestions[index];
+  if (question && question.selfContained) {
+    return question.type;
+  }
+
   const types = DIFFICULTIES[state.difficulty].types;
   return types[index % types.length];
 }
@@ -288,6 +311,11 @@ function renderQuestion() {
 // Enunciado: el símbolo (clásico, abierto y explicar), el nombre (inversa), el
 // caso de Difícil o el escenario de Práctica.
 function renderPrompt(question, type) {
+  if (question.selfContained) {
+    renderSelfContainedPrompt(question, type);
+    return;
+  }
+
   const fact = symbolFacts[question.symbol];
 
   if (type === "inverse") {
@@ -310,6 +338,25 @@ function appendPrompt(className, text) {
   paragraph.textContent = text;
   symbolBox.innerHTML = "";
   symbolBox.appendChild(paragraph);
+}
+
+// Enunciado de una pregunta que lo trae todo consigo (el modo de diagramas de
+// casos de uso): o la situación escrita, o el diagrama, y en el caso de
+// razonamiento el diagrama seguido de lo que se pregunta.
+function renderSelfContainedPrompt(question, type) {
+  if (type === "usecase-model") {
+    appendPrompt("scenario", question.scenario);
+    return;
+  }
+
+  symbolBox.innerHTML = USE_CASE_FIGURES[question.figure];
+
+  if (type === "usecase-reason") {
+    const paragraph = document.createElement("p");
+    paragraph.className = "scenario";
+    paragraph.textContent = question.prompt;
+    symbolBox.appendChild(paragraph);
+  }
 }
 
 function renderHint(type) {
@@ -348,6 +395,11 @@ function symbolOptions(symbol) {
 // Las opciones de la pregunta actual: nombres del glosario (clásico, inversa,
 // caso y escenario), escenarios (explicar) o el dibujo de cada símbolo (inversa).
 function renderOptions(question, type) {
+  if (question.selfContained) {
+    renderSelfContainedOptions(question, type);
+    return;
+  }
+
   const options =
     type === "explain-mc" ? explainOptions(question) : symbolOptions(question.symbol);
 
@@ -360,6 +412,31 @@ function renderOptions(question, type) {
     if (type === "inverse") {
       button.className = "option-button option-button--symbol";
       button.innerHTML = symbolFigure(symbolIdByName[option], state.difficulty);
+    } else {
+      button.className = "option-button";
+      button.textContent = option;
+    }
+
+    button.addEventListener("click", () => selectOption(button, option));
+    optionsList.appendChild(button);
+  });
+}
+
+// Opciones de una pregunta que lo trae todo consigo: en las de modelado cada
+// opción es un diagrama (como las del tipo inverso, pero de casos de uso), y en
+// las de razonamiento es la respuesta escrita. El tipo de nombre es el único
+// abierto de este modo, así que no llega hasta aquí.
+function renderSelfContainedOptions(question, type) {
+  optionsList.innerHTML = "";
+
+  shuffle(question.options).forEach((option) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.option = option;
+
+    if (type === "usecase-model") {
+      button.className = "option-button option-button--symbol";
+      button.innerHTML = USE_CASE_OPTION_FIGURES[option];
     } else {
       button.className = "option-button";
       button.textContent = option;
@@ -434,7 +511,19 @@ function isScenarioAnswer() {
 // Respuesta correcta de la pregunta actual. Sale del glosario, salvo en las de
 // práctica que piden el escenario del diagrama: ahí es el `scenario` de la pregunta.
 function correctAnswer(question) {
+  if (question.selfContained) {
+    return question.answer;
+  }
+
   return isScenarioAnswer() ? question.scenario : symbolFacts[question.symbol].name;
+}
+
+// Glosario de una pregunta: el del modo de casos de uso primero, y el general
+// detrás. Así las dos relaciones propias («include», «extend») tienen su
+// descripción sin tocar `symbolFacts`, que comparten los otros modos, y el resto
+// de símbolos se resuelven por el camino de siempre.
+function questionFacts(question) {
+  return useCaseFacts[question.symbol] || symbolFacts[question.symbol];
 }
 
 // Construye los trozos de la explicación a partir del glosario `symbolFacts`.
@@ -442,9 +531,23 @@ function correctAnswer(question) {
 // pone la respuesta correcta por delante y, si la correcta era un escenario,
 // se añade el nombre del símbolo: si no, nunca se diría qué se estaba dibujando.
 function buildFeedback(question, chosenOption) {
-  const fact = symbolFacts[question.symbol];
   const correct = correctAnswer(question);
   const isCorrect = normalizeAnswer(chosenOption) === normalizeAnswer(correct);
+
+  if (question.selfContained) {
+    const fact = questionFacts(question);
+    return {
+      isCorrect: isCorrect,
+      verdict: isCorrect ? "¡Correcto!" : "¡Incorrecto!",
+      lead: isCorrect ? null : "La respuesta correcta es «" + correct + "».",
+      name: null,
+      reason: question.reason || null,
+      syntax: fact.syntax,
+      meaning: fact.meaning
+    };
+  }
+
+  const fact = symbolFacts[question.symbol];
 
   return {
     isCorrect: isCorrect,
@@ -472,6 +575,11 @@ function renderFeedback(feedback) {
   }
   if (feedback.name) {
     feedbackBody.appendChild(createFeedbackBlock("Símbolo:", [feedback.name]));
+  }
+  // El razonamiento solo lo llevan las preguntas de diagrama de casos de uso:
+  // sin él no se entendería por qué un conjunto de actores es la respuesta.
+  if (feedback.reason) {
+    feedbackBody.appendChild(createFeedbackBlock("Por qué:", [feedback.reason]));
   }
   feedbackBody.appendChild(createFeedbackBlock("Cómo se dibuja:", [feedback.syntax]));
   feedbackBody.appendChild(createFeedbackBlock("Qué modela:", [feedback.meaning]));
