@@ -588,6 +588,22 @@ Object.keys(symbolFacts).forEach((id) => {
   symbolIdByName[symbolFacts[id].name] = id;
 });
 
+// El glosario lateral: los mismos conceptos de `symbolFacts` y `useCaseFacts`,
+// agrupados por familia y en el orden en que se muestran. Aquí solo hay ids,
+// nunca referencias, para que `data.js` pueda citar `include` y `extend` sin
+// depender de `data-usecase.js`, que se carga después: de esos dos se resuelve
+// la ficha en app.js, con la misma regla que usa el feedback.
+//
+// `note` no entra: no está en ningún banco, solo se usa como distractor. Son 22
+// fichas, y cada una sale del glosario que ya hay, sin texto nuevo.
+const GLOSSARY_SECTIONS = [
+  { title: "Clases y objetos", symbols: ["class", "object", "package", "interfaceLollipop"] },
+  { title: "Relaciones entre clases", symbols: ["composition", "aggregation", "association", "dependency", "generalization", "realization"] },
+  { title: "Casos de uso", symbols: ["actor", "useCase", "include", "extend"] },
+  { title: "Interacción", symbols: ["lifeline", "message", "execution", "selfMessage"] },
+  { title: "Componentes y despliegue", symbols: ["component", "node", "artifact", "communicationPath"] }
+];
+
 // Los tres nombres que se ofrecen al elegir un símbolo: el correcto y dos que
 // se le parecen. Vive por símbolo y no dentro del banco porque un mismo símbolo
 // puede aparecer en varias dificultades, y porque cada banco solo dice qué

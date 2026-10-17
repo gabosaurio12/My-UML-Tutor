@@ -745,19 +745,21 @@ const useCaseQuestions = [
     answer: "Inclusión"
   },
   {
-    // 5 · razonamiento: quien llega al caso que extiende llega también al base, y la
-    // herencia de actores va del hijo al padre, no al revés.
+    // 5 · razonamiento: asociación directa, no alcance. El que llega al caso que
+    // extiende por G no se comunica directamente con el base, y la herencia de
+    // actores va del hijo al padre, no al revés.
     selfContained: true,
     type: "usecase-reason",
     symbol: "extend",
     figure: "extendReachesBase",
-    prompt: "¿Qué actores se comunican con el caso de uso K?",
+    prompt: "¿Qué actores se comunican directamente con el caso de uso K?",
     options: ["U y R", "U, R y S", "Solo U"],
-    answer: "U y R",
+    answer: "Solo U",
     reason:
-      "U se asocia directamente a K. R se asocia a G, y G extiende a K, así que R " +
-      "también alcanza K. S no: R hereda de S, y la herencia va de R hacia S, nunca " +
-      "al revés, así que S no hereda los casos de R."
+      "U se asocia directamente a K. R no: se asocia a G, y que G extiende a K no " +
+      "convierte esa extensión en una asociación directa con K. " +
+      "S no: R hereda de S, y la herencia va de R hacia S, nunca al revés, " +
+      "así que S no hereda los casos de R."
   },
   {
     // 6 · modelado con multiplicidades: el «1» y el «1..*» son el enunciado.

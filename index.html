@@ -4,53 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tutor de UML</title>
+  <meta name="description" content="Aprende la sintaxis y el significado de los símbolos de UML con ejercicios de práctica.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <header class="site-header">
+    <button id="glossaryToggle" class="glossary-toggle" type="button"
+            aria-expanded="false" aria-controls="glossaryPanel">Glosario</button>
     <h1>Mi Tutor de UML</h1>
-    <p class="subtitle">Aprende la sintaxis y el significado de los símbolos de UML</p>
+    <p class="subtitle">La sintaxis y el significado de cada símbolo de UML</p>
   </header>
+
+  <!-- Glosario lateral: se pinta desde app.js con symbolFacts y useCaseFacts -->
+  <aside id="glossaryPanel" class="glossary" tabindex="0">
+    <h2 class="glossary-title">Glosario</h2>
+    <div id="glossaryList" class="glossary-list"></div>
+  </aside>
+  <div id="glossaryBackdrop" class="glossary-backdrop"></div>
 
   <main>
 
     <!-- Pantalla de inicio -->
     <section id="homeScreen" class="screen card">
       <p class="intro">
-
-        Cada acierto vale 1 punto.
-
-        <ul class="intro-list">
-          <li><strong>Normal</strong> verás un símbolo de UML básico y elegirás su nombre</li>
-          <li>
-            <strong>Difícil</strong>, que añade los diagramas de comunicación y de secuencia, 
-            tendrásque elegir el símbolo, escribir el nombre o resolver un caso
-          </li>
-          <li>
-            Las dos <strong>prácticas</strong> razonan por qué una situación se representa de una forma y no de otra:
-          </li>
-          <ul>
-            <li><strong>Práctica UML básico</strong> son 10 preguntas</li>
-            <li><strong>Práctica UML completo</strong>, con componentes y despliegue, son 30</li>
-            <li>
-              <strong>Diagramas de casos de uso</strong> razonas sobre un diagrama entero: qué
-              actores llegan a cada caso, qué relación corresponde y por qué</li>
-            </li>
-          </ul>
-        </ul>    
-        
+        Cada acierto vale un punto. Elige una dificultad y responde a las preguntas
+        en orden: verás un símbolo, un diagrama o una situación, y tendrás que nombrarlo
+        o elegirlo.
       </p>
+
+      <ul id="introList" class="intro-list"></ul>
 
       <div class="difficulty-field">
         <label class="difficulty-label" for="difficultySelect">Dificultad</label>
-        <select id="difficultySelect" class="difficulty-select">
-          <option value="normal">Normal · UML básico</option>
-          <option value="hard">Difícil · UML intermedio</option>
-          <option value="practiceBasic">Práctica UML básico</option>
-          <option value="practiceComplete">Práctica UML completo</option>
-          <option value="useCase">Diagramas de casos de uso</option>
-        </select>
+        <select id="difficultySelect" class="difficulty-select"></select>
       </div>
 
       <button id="startButton" type="button" class="primary-button">
@@ -60,7 +47,7 @@
       <h2 class="section-title">Puntajes más altos</h2>
       <ol id="scoresList" class="scores-list"></ol>
       <p id="emptyScores" class="empty-message">
-        Todavía no hay puntajes. ¡Inicia una sesión!
+        Todavía no hay puntajes. Inicia una sesión.
       </p>
     </section>
 
@@ -68,7 +55,12 @@
     <section id="quizScreen" class="screen card is-hidden">
       <div class="quiz-header">
         <span id="questionCounter">Pregunta 1 de 10</span>
-        <span id="scoreValue">Puntos: 0</span>
+        <span id="scoreValue" class="quiz-score">Puntos: 0</span>
+      </div>
+
+      <div id="sessionProgress" class="progress" role="progressbar" aria-valuemin="1"
+           aria-valuemax="10" aria-valuenow="1" aria-label="Pregunta actual">
+        <div id="progressFill" class="progress-fill"></div>
       </div>
 
       <div id="symbolBox" class="symbol-box"></div>
@@ -120,7 +112,7 @@
       </p>
     </details>
 
-    <p class="footer-credit">Desarrollado por <strong>GaboSaurio</strong></p>
+    <p>Desarrollado por <strong>GaboSaurio</strong></p>
     <p class="footer-contact">
       Contacto: <a href="mailto:gabgonlo05@gmail.com">gabgonlo05@gmail.com</a>
     </p>
