@@ -15,7 +15,7 @@
 // Los seis símbolos de relación se generan con `relationFigure` (más abajo).
 const symbolShapes = {
   class: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de clase">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de clase">
       <g stroke="#334155" stroke-width="2.5" fill="#ffffff" stroke-linejoin="round">
         <rect x="45" y="8" width="110" height="84"></rect>
         <line x1="45" y1="36" x2="155" y2="36"></line>
@@ -29,21 +29,21 @@ const symbolShapes = {
     </svg>`,
 
   object: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de objeto">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de objeto">
       <rect x="45" y="28" width="110" height="44" fill="#ffffff" stroke="#334155" stroke-width="2.5"></rect>
       <text x="100" y="56" text-anchor="middle" font-size="14" font-family="system-ui, sans-serif"
             fill="#334155" text-decoration="underline">ana: Persona</text>
     </svg>`,
 
   package: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de paquete">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de paquete">
       <path d="M45,32 V20 H95 V32 H155 V85 H45 Z"
             fill="#ffffff" stroke="#334155" stroke-width="2.5" stroke-linejoin="round"></path>
       <text x="100" y="64" text-anchor="middle" font-size="13" font-family="system-ui, sans-serif" fill="#334155">modelos</text>
     </svg>`,
 
   component: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de componente">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de componente">
       <g stroke="#334155" stroke-width="2.5" fill="#ffffff" stroke-linejoin="round">
         <rect x="50" y="25" width="105" height="50"></rect>
         <rect x="40" y="33" width="20" height="14"></rect>
@@ -52,7 +52,7 @@ const symbolShapes = {
     </svg>`,
 
   note: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de nota">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de nota">
       <g stroke="#334155" stroke-width="2.5" fill="#ffffff" stroke-linejoin="round">
         <path d="M50,18 H135 L160,43 V85 H50 Z"></path>
         <path d="M135,18 V43 H160"></path>
@@ -60,7 +60,7 @@ const symbolShapes = {
     </svg>`,
 
   actor: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de actor">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de actor">
       <g stroke="#334155" stroke-width="2.5" fill="none" stroke-linecap="round">
         <circle cx="100" cy="24" r="14" fill="#ffffff"></circle>
         <line x1="100" y1="38" x2="100" y2="66"></line>
@@ -71,7 +71,7 @@ const symbolShapes = {
     </svg>`,
 
   artifact: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de artefacto">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de artefacto">
       <g stroke="#334155" stroke-width="2.5" fill="#ffffff" stroke-linejoin="round">
         <rect x="45" y="12" width="110" height="76"></rect>
         <line x1="45" y1="36" x2="155" y2="36"></line>
@@ -83,7 +83,7 @@ const symbolShapes = {
     </svg>`,
 
   communicationPath: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de ruta de comunicación">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de ruta de comunicación">
       <g stroke="#334155" stroke-width="2.5" stroke-linejoin="round">
         <polygon points="55,20 85,35 55,50 25,35" fill="#e2e8f0"></polygon>
         <polygon points="25,35 55,50 55,66 25,51" fill="#ffffff"></polygon>
@@ -96,7 +96,7 @@ const symbolShapes = {
     </svg>`,
 
   node: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de nodo">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de nodo">
       <g stroke="#334155" stroke-width="2.5" stroke-linejoin="round">
         <polygon points="100,12 158,40 100,68 42,40" fill="#e2e8f0"></polygon>
         <polygon points="42,40 100,68 100,94 42,66" fill="#ffffff"></polygon>
@@ -105,7 +105,7 @@ const symbolShapes = {
     </svg>`,
 
   interfaceLollipop: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de interfaz">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de interfaz">
       <g stroke="#334155" stroke-width="2.5" fill="none">
         <line x1="35" y1="50" x2="122" y2="50"></line>
         <circle cx="140" cy="50" r="18" fill="#ffffff"></circle>
@@ -113,7 +113,7 @@ const symbolShapes = {
     </svg>`,
 
   useCase: `
-    <svg viewBox="0 0 200 100" role="img" aria-label="Símbolo de caso de uso">
+    <svg viewBox="0 0 200 100" class="symbol-svg" role="img" aria-label="Símbolo de caso de uso">
       <ellipse cx="100" cy="50" rx="72" ry="32" fill="#ffffff" stroke="#334155" stroke-width="2.5"></ellipse>
       <text x="100" y="55" text-anchor="middle" font-size="13" font-family="system-ui, sans-serif" fill="#334155">Realizar pedido</text>
     </svg>`

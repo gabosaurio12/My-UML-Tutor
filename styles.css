@@ -687,15 +687,26 @@ button {
   width: auto;
 }
 
-/* Una sola medida para todas las figuras de opción, la que ya usaban los
-   diagramas de casos de uso. Antes cada familia tenía la suya (280 símbolos
-   sueltos, 320 relaciones, 300 interacciones, 260 casos de uso) y como el símbolo
-   suelto solo mide 200 px de ancho, en Difícil se dibujaba un 40 % más grande que
-   su tamaño real y los botones quedaban mucho mayores que en los demás modos. */
+/* Una sola medida para las figuras de opción, la que ya usaban los diagramas de
+   casos de uso. Antes cada familia tenía la suya (280 símbolos sueltos, 320
+   relaciones, 300 interacciones, 260 casos de uso) y quedaban unas distintas de
+   las otras: las relaciones y las interacciones se dibujan por debajo de su
+   tamaño natural, pero un símbolo suelto, cuyo lienzo mide 200 px, se agrandaba
+   hasta 280. */
 .option-button--symbol svg {
   width: 100%;
   max-width: 260px;
   height: auto;
+}
+
+/* El símbolo suelto va **a su tamaño**, sin agrandarlo. Sus rótulos están
+   calculados para un lienzo de 200 px, así que subir la medida hacía crecer
+   también las letras —de 11–13 px a 14–17 px, más grandes que el texto de la
+   página— y el botón parecía un cartel. A 200 px sale a escala 1:1, las letras
+   conservan el tamaño con el que están dibujadas y el botón queda a la altura de
+   los demás. */
+.option-button--symbol svg.symbol-svg {
+  max-width: 200px;
 }
 
 /* ---------- Respuesta abierta ---------- */
