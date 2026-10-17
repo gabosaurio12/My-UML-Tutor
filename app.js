@@ -37,6 +37,8 @@ const homeButton = document.getElementById("homeButton");
 
 const questionCounter = document.getElementById("questionCounter");
 const scoreValue = document.getElementById("scoreValue");
+const sessionProgress = document.getElementById("sessionProgress");
+const progressFill = document.getElementById("progressFill");
 const symbolBox = document.getElementById("symbolBox");
 const optionsList = document.getElementById("optionsList");
 const questionHint = document.getElementById("questionHint");
@@ -51,8 +53,95 @@ const emptyScores = document.getElementById("emptyScores");
 const finalScoreText = document.getElementById("finalScoreText");
 const recordText = document.getElementById("recordText");
 
+const introList = document.getElementById("introList");
+const glossaryPanel = document.getElementById("glossaryPanel");
+const glossaryToggle = document.getElementById("glossaryToggle");
+const glossaryBackdrop = document.getElementById("glossaryBackdrop");
+const glossaryList = document.getElementById("glossaryList");
+
 /* ---------------------------------------------------------
-   3. PUNTUACIONES (localStorage)
+   3. GLOSARIO LATERAL
+   --------------------------------------------------------- */
+
+// El panel no escribe texto nuevo: cada ficha es una entrada del glosario que ya
+// existe, con su nombre, su figura neutra y su significado. El orden y las
+// familias salen de `GLOSSARY_SECTIONS` (data.js).
+
+// Estas dos relaciones solo existen dentro de un diagrama de casos de uso
+// completo, así que su ficha va sin figura: no hay un dibujo suelto que enseñar.
+const GLOSSARY_WITHOUT_FIGURE = ["include", "extend"];
+
+// Una ficha del glosario. La resolución de la entrada reutiliza `questionFacts`
+// con un objeto que solo trae el id, para que `useCaseFacts` y `symbolFacts` se
+// consulten siempre por la misma regla y no haya una segunda copia de ella.
+function buildGlossaryEntry(id) {
+  const fact = questionFacts({ symbol: id });
+
+  const item = document.createElement("li");
+  item.className = "glossary-entry";
+
+  const name = document.createElement("h4");
+  name.className = "glossary-name";
+  name.textContent = fact.name;
+  item.appendChild(name);
+
+  if (GLOSSARY_WITHOUT_FIGURE.indexOf(id) === -1) {
+    const figure = document.createElement("div");
+    figure.className = "glossary-figure";
+    // Variante neutra («Clase A/B», «Participante A/B», sin multiplicidades): en
+    // el glosario el símbolo se lee por su forma, no por un dominio.
+    figure.innerHTML = symbolFigure(id, "practice", true);
+    item.appendChild(figure);
+  }
+
+  const meaning = document.createElement("p");
+  meaning.className = "glossary-meaning";
+  meaning.textContent = fact.meaning;
+  item.appendChild(meaning);
+
+  return item;
+}
+
+function renderGlossary() {
+  glossaryList.innerHTML = "";
+
+  GLOSSARY_SECTIONS.forEach((section) => {
+    const block = document.createElement("section");
+    block.className = "glossary-section";
+
+    const title = document.createElement("h3");
+    title.className = "glossary-section-title";
+    title.textContent = section.title;
+    block.appendChild(title);
+
+    const entries = document.createElement("ul");
+    entries.className = "glossary-entries";
+    section.symbols.forEach((id) => {
+      entries.appendChild(buildGlossaryEntry(id));
+    });
+    block.appendChild(entries);
+
+    glossaryList.appendChild(block);
+  });
+}
+
+// El panel entra y sale, y arranca cerrado. No se guarda si estaba abierto:
+// abrirlo es una decisión de esta visita, y recordarla añadiría una clave nueva a
+// lo que ya vive en el navegador del alumno.
+function setGlossaryOpen(isOpen) {
+  glossaryPanel.classList.toggle("is-open", isOpen);
+  glossaryBackdrop.classList.toggle("is-visible", isOpen);
+  glossaryToggle.setAttribute("aria-expanded", String(isOpen));
+  // Con el panel abierto el fondo no debe seguir desplazándose por detrás.
+  document.body.classList.toggle("glossary-open", isOpen);
+}
+
+function toggleGlossary() {
+  setGlossaryOpen(!glossaryPanel.classList.contains("is-open"));
+}
+
+/* ---------------------------------------------------------
+   4. PUNTUACIONES (localStorage)
    --------------------------------------------------------- */
 
 // Récord de cada dificultad, todos a cero.
@@ -110,55 +199,105 @@ function saveBestScore(score) {
   }
 }
 
-// Filas de la lista: puntajes de esta página y, si procede, el récord guardado.
-function buildScoreRows() {
-  const best = loadBestScore();
-  const rows = state.sessionScores
-    .filter((entry) => entry.difficulty === state.difficulty)
-    .map((entry) => entry.score)
-    .sort((a, b) => b - a);
+// Cuántas filas se muestran por grupo, como máximo.
+const SCORES_PER_GROUP = 5;
+
+// Las filas de una dificultad: los puntajes de esta página y, si no está entre
+// ellos, el récord guardado de esa dificultad. Cada fila se identifica por el
+// par dificultad + puntos, y como aquí solo se mezcla una dificultad, dos
+// puntajes iguales de modos distintos nunca se fusionan: viven en otros grupos.
+//
+// El récord se pone el primero aunque no sea el mayor de la lista, y no solo por
+// casualidad del orden: es la referencia de esa dificultad y tiene que abrir el
+// grupo aunque mañana se juegue una partida peor.
+function buildScoreRows(difficulty, records) {
+  const best = numberOrZero(records[difficulty]);
+  const scores = state.sessionScores
+    .filter((entry) => entry.difficulty === difficulty)
+    .map((entry) => entry.score);
 
   // El récord de visitas anteriores aparece aunque no se haya hecho hoy.
-  if (best > 0 && !rows.includes(best)) {
-    rows.push(best);
+  if (best > 0 && scores.indexOf(best) === -1) {
+    scores.push(best);
   }
 
-  // Solo la fila más alta lleva la insignia de récord.
-  let recordMarked = false;
-  return rows.slice(0, 5).map((score) => {
-    const isRecord = best > 0 && !recordMarked && score === best;
-    recordMarked = recordMarked || isRecord;
-    return { score: score, isRecord: isRecord };
+  scores.sort((a, b) => b - a);
+
+  const rows = scores.slice(0, SCORES_PER_GROUP).map((score) => {
+    return { score: score, isRecord: best > 0 && score === best };
   });
+
+  const recordIndex = rows.findIndex((row) => row.isRecord);
+  if (recordIndex > 0) {
+    rows.unshift(rows.splice(recordIndex, 1)[0]);
+  }
+
+  return rows;
+}
+
+// Los grupos, uno por dificultad que tenga algún puntaje, en el orden del combo.
+// No se mezclan: los bancos no son comparables entre sí —«Práctica UML completo»
+// son 30 preguntas y «Normal» son 11—, así que ordenar todos los puntos juntos
+// daría un ranking que no significa nada.
+function buildScoreGroups() {
+  const records = loadRecords();
+
+  return Object.keys(DIFFICULTIES)
+    .map((difficulty) => {
+      return {
+        difficulty: difficulty,
+        label: DIFFICULTIES[difficulty].label,
+        rows: buildScoreRows(difficulty, records)
+      };
+    })
+    .filter((group) => group.rows.length > 0);
 }
 
 function renderScores() {
-  const rows = buildScoreRows();
+  const groups = buildScoreGroups();
   scoresList.innerHTML = "";
 
-  rows.forEach((row) => {
-    const item = document.createElement("li");
+  groups.forEach((group) => {
+    const section = document.createElement("li");
+    section.className = "score-group";
 
-    if (row.isRecord) {
-      const badge = document.createElement("span");
-      badge.className = "record-badge";
-      badge.textContent = "récord";
-      item.appendChild(badge);
-    }
+    // El nombre de la dificultad: la lista ya no se filtra, así que la fila tiene
+    // que decir de dónde sale cada puntaje.
+    const title = document.createElement("p");
+    title.className = "score-group-title";
+    title.textContent = group.label;
+    section.appendChild(title);
 
-    const points = document.createElement("span");
-    points.className = "score-points";
-    points.textContent = row.score + (row.score === 1 ? " punto" : " puntos");
-    item.appendChild(points);
+    const rows = document.createElement("ul");
+    rows.className = "score-rows";
 
-    scoresList.appendChild(item);
+    group.rows.forEach((row) => {
+      const item = document.createElement("li");
+
+      const points = document.createElement("span");
+      points.className = "score-points";
+      points.textContent = row.score + (row.score === 1 ? " punto" : " puntos");
+      item.appendChild(points);
+
+      if (row.isRecord) {
+        const badge = document.createElement("span");
+        badge.className = "record-badge";
+        badge.textContent = "récord";
+        item.appendChild(badge);
+      }
+
+      rows.appendChild(item);
+    });
+
+    section.appendChild(rows);
+    scoresList.appendChild(section);
   });
 
-  emptyScores.classList.toggle("is-hidden", rows.length > 0);
+  emptyScores.classList.toggle("is-hidden", groups.length > 0);
 }
 
 /* ---------------------------------------------------------
-   4. PANTALLAS
+   5. PANTALLAS
    --------------------------------------------------------- */
 
 function showScreen(screen) {
@@ -180,7 +319,7 @@ function shuffle(items) {
 }
 
 /* ---------------------------------------------------------
-   5. SESIÓN DE ESTUDIO
+   6. SESIÓN DE ESTUDIO
    --------------------------------------------------------- */
 
 // Tipos de la dificultad difícil, en el orden en que se repiten.
@@ -224,13 +363,82 @@ function isDiagramType(type) {
 // Las cinco dificultades del combo, una fila cada una: qué banco usa y en qué
 // orden se repiten sus tipos de pregunta. El tamaño de la sesión es el del banco,
 // así que no hace falta repetirlo aquí. Añadir una dificultad es añadir una fila.
+//
+// `label` es el nombre limpio de la dificultad: lo que pone el combo y lo que
+// titula su grupo de puntajes. `desc` es lo que explica el modo en la lista de
+// inicio; el número de preguntas no está escrito en ninguna parte porque se
+// cuenta con el tamaño del banco.
 const DIFFICULTIES = {
-  normal: { bank: questions, types: ["symbol"] },
-  hard: { bank: hardQuestions, types: HARD_QUESTION_TYPES },
-  practiceBasic: { bank: practiceBasicQuestions, types: PRACTICE_QUESTION_TYPES },
-  practiceComplete: { bank: practiceCompleteQuestions, types: PRACTICE_QUESTION_TYPES },
-  useCase: { bank: useCaseQuestions, types: USE_CASE_QUESTION_TYPES }
+  normal: {
+    label: "Normal",
+    desc: "de UML básico: un símbolo y su nombre.",
+    bank: questions,
+    types: ["symbol"]
+  },
+  hard: {
+    label: "Difícil",
+    desc: "de UML intermedio, con comunicación y secuencia: eliges el símbolo, escribes el nombre o resuelves un caso.",
+    bank: hardQuestions,
+    types: HARD_QUESTION_TYPES
+  },
+  practiceBasic: {
+    label: "Práctica UML básico",
+    desc: "que razonan por qué una situación se representa de una forma y no de otra.",
+    bank: practiceBasicQuestions,
+    types: PRACTICE_QUESTION_TYPES
+  },
+  practiceComplete: {
+    label: "Práctica UML completo",
+    desc: "que amplían las anteriores con componentes y despliegue.",
+    bank: practiceCompleteQuestions,
+    types: PRACTICE_QUESTION_TYPES
+  },
+  useCase: {
+    label: "Diagramas de casos de uso",
+    desc: "sobre un diagrama entero: qué actores llegan a cada caso, qué relación corresponde y por qué.",
+    bank: useCaseQuestions,
+    types: USE_CASE_QUESTION_TYPES
+  }
 };
+
+// El combo se pinta desde la tabla de dificultades para que sus opciones y los
+// títulos de los grupos de puntajes no puedan separarse: los dos salen de `label`.
+function renderDifficultySelect() {
+  difficultySelect.innerHTML = "";
+
+  Object.keys(DIFFICULTIES).forEach((key) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = DIFFICULTIES[key].label;
+    difficultySelect.appendChild(option);
+  });
+
+  difficultySelect.value = state.difficulty;
+}
+
+// La lista de modos del inicio, con el nombre y su descripción. El recuento sale
+// del banco, así que añadir una dificultad no obliga a recontar nada a mano.
+function renderIntroList() {
+  introList.innerHTML = "";
+
+  Object.keys(DIFFICULTIES).forEach((key) => {
+    const mode = DIFFICULTIES[key];
+    const count = mode.bank.length;
+
+    const item = document.createElement("li");
+
+    const name = document.createElement("strong");
+    name.textContent = mode.label;
+    item.appendChild(name);
+
+    const text = document.createElement("span");
+    text.textContent =
+      count + " " + (count === 1 ? "pregunta " : "preguntas ") + mode.desc;
+    item.appendChild(text);
+
+    introList.appendChild(item);
+  });
+}
 
 // Tipo de la pregunta `index`: la tabla de dificultades decide cuál se repite.
 // Normal solo tiene la clásica; Difícil alterna inversa, abierta y caso (5/5/5
@@ -283,6 +491,14 @@ function renderQuestion() {
   questionCounter.textContent =
     "Pregunta " + (state.currentIndex + 1) + " de " + state.sessionQuestions.length;
   scoreValue.textContent = "Puntos: " + state.score;
+
+  // La regla de avance: una línea por pregunta ya contestada, con su marca de
+  // cota en la posición actual.
+  const total = state.sessionQuestions.length;
+  const done = state.currentIndex + 1;
+  progressFill.style.width = (done / total) * 100 + "%";
+  sessionProgress.setAttribute("aria-valuemax", String(total));
+  sessionProgress.setAttribute("aria-valuenow", String(done));
 
   feedbackBox.classList.add("is-hidden");
   acceptButton.classList.remove("is-hidden");
@@ -666,7 +882,7 @@ function endSession() {
 }
 
 /* ---------------------------------------------------------
-   6. EVENTOS DE LA PÁGINA
+   7. EVENTOS DE LA PÁGINA
    --------------------------------------------------------- */
 
 startButton.addEventListener("click", startSession);
@@ -677,13 +893,30 @@ homeButton.addEventListener("click", () => {
   showScreen(homeScreen);
 });
 
+// La lista de puntajes ya no depende de la dificultad elegida —sale entera, con
+// su grupo—, así que cambiar el combo solo cambia el modo de la sesión.
 difficultySelect.addEventListener("change", () => {
   state.difficulty = difficultySelect.value;
-  renderScores();
 });
 
 answerInput.addEventListener("input", () => {
   acceptButton.disabled = answerInput.value.trim() === "";
 });
 
+glossaryToggle.addEventListener("click", toggleGlossary);
+glossaryBackdrop.addEventListener("click", () => setGlossaryOpen(false));
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && glossaryPanel.classList.contains("is-open")) {
+    setGlossaryOpen(false);
+    glossaryToggle.focus();
+  }
+});
+
+// Arranque: el combo y la lista de intro se pintan desde `DIFFICULTIES`, el
+// glosario desde los glosarios de datos y los grupos de puntajes, sus récords.
+renderDifficultySelect();
+renderIntroList();
+renderGlossary();
+setGlossaryOpen(false);
 renderScores();

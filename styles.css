@@ -1,24 +1,48 @@
 /* =========================================================
-   Tutor de UML — estilos
+   Tutor de UML — hoja de delineación
+
+   La identidad sale del propio tema: figuras de UML dibujadas
+   a tinta sobre una lámina. Por eso hay reglas finas en vez
+   de sombras, esquinas vivas en vez de redondeadas, papel
+   milimetrado bajo el papel y marcas de registro en las
+   esquinas. El COLOR se reserva: tinta, azul de delineante y
+   dos lápices (rojo para corregir, verde para validar). Las
+   respuestas falladas se rayan, que es como se corrige un
+   dibujo, y no con un fondo verde o rojo.
    ========================================================= */
 
 :root {
-  --color-bg: #f4f6fb;
-  --color-card: #ffffff;
-  --color-text: #1f2937;
-  --color-muted: #6b7280;
-  --color-border: #d7dce5;
-  --color-soft: #f8fafc;
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-soft: #eff6ff;
-  --color-success: #16a34a;
-  --color-success-bg: #ecfdf3;
-  --color-success-text: #14532d;
-  --color-danger: #dc2626;
-  --color-danger-bg: #fef2f2;
-  --color-danger-text: #7f1d1d;
-  --radius: 14px;
+  /* La mesa y la lámina */
+  --ground: #dde3ec;
+  --ground-line: #d3dae5;
+  --paper: #fcfdff;
+
+  /* Tinta y anotación */
+  --ink: #1f2c40;
+  --ink-soft: #4d5d73;
+  --rule: #c3ccda;
+  --rule-strong: #9dabbe;
+
+  /* Azul de delineante */
+  --accent: #14548f;
+  --accent-dark: #0e3f70;
+  --accent-soft: #e7eef6;
+
+  /* Lápices */
+  --pen-red: #b02a20;
+  --pen-red-soft: #fbeceb;
+  --pen-green: #1c7a52;
+  --pen-green-soft: #e8f4ee;
+  --pen-amber: #8a5a12;
+
+  /* Retícula de las figuras */
+  --grid: #e6ebf2;
+
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+    Georgia, serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
 }
 
 * {
@@ -27,66 +51,293 @@
 
 body {
   margin: 0;
-  padding: 0 16px 48px;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  line-height: 1.55;
+  padding: 0 20px 56px;
+  background-color: var(--ground);
+  background-image:
+    linear-gradient(var(--ground-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ground-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .is-hidden {
   display: none !important;
 }
 
+/* Foco visible y uniforme en todo lo interactivo. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ---------- Cabecera ---------- */
 
+/* Tres columnas con el título en la del medio: el botón del glosario entra a la
+   izquierda sin desplazar el bloque, que sigue centrado como estaba. */
 .site-header {
-  max-width: 640px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 16px;
+  max-width: 680px;
   margin: 0 auto;
-  padding: 36px 0 20px;
-  text-align: center;
+  padding: 40px 0 22px;
+  /* Rótulo de la lámina: filete grueso y filete fino debajo. */
+  border-bottom: 3px double var(--rule-strong);
 }
 
 .site-header h1 {
+  grid-column: 2;
   margin: 0;
-  font-size: clamp(1.7rem, 6vw, 2.3rem);
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 6.5vw, 2.7rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
 }
 
 .subtitle {
-  margin: 6px 0 0;
-  color: var(--color-muted);
+  grid-column: 2;
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 1.02rem;
 }
 
-/* ---------- Contenedor principal ---------- */
+/* ---------- Botón del glosario ---------- */
+
+.glossary-toggle {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.glossary-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* El mismo caret del combo, dibujado con bordes para no depender de la fuente. */
+.glossary-toggle::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid currentColor;
+  transition: transform 0.15s ease;
+}
+
+/* Abierto, el caret gira hacia el panel, que se cierra yendo hacia él. */
+.glossary-toggle[aria-expanded="true"]::before {
+  transform: rotate(180deg);
+}
+
+/* ---------- Glosario lateral ---------- */
+
+/* El panel entra y sale. Arranca cerrado y fuera de la tabla de tabulación
+   (`visibility: hidden`): si solo se ocultara con `transform`, sus enlaces y
+   textos seguirían siendo alcanzables con el teclado. */
+.glossary {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: min(340px, 88vw);
+  padding: 26px 22px 40px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background-color: var(--paper);
+  border-right: 1px solid var(--rule-strong);
+  transform: translateX(-102%);
+  visibility: hidden;
+  transition: transform 0.2s ease, visibility 0.2s;
+}
+
+.glossary.is-open {
+  transform: none;
+  visibility: visible;
+}
+
+body.glossary-open {
+  overflow: hidden;
+}
+
+.glossary-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background: rgba(31, 44, 64, 0.32);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
+}
+
+.glossary-backdrop.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.glossary-title {
+  margin: 0 0 20px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.glossary-section {
+  margin-bottom: 22px;
+}
+
+.glossary-section-title {
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.glossary-entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.glossary-entry {
+  margin-bottom: 20px;
+}
+
+.glossary-name {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 1.06rem;
+  font-weight: 600;
+}
+
+.glossary-figure {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 2px;
+}
+
+.glossary-figure svg {
+  width: 100%;
+  max-width: 230px;
+  height: auto;
+}
+
+.glossary-figure svg.relation-svg {
+  max-width: 296px;
+}
+
+.glossary-figure svg.interaction-svg {
+  max-width: 210px;
+}
+
+.glossary-meaning {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* ---------- La lámina ---------- */
 
 main {
-  max-width: 640px;
-  margin: 0 auto;
+  max-width: 680px;
+  margin: 26px auto 0;
 }
 
 .card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 24px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 30px 28px;
+}
+
+/* Marcas de registro en dos esquinas opuestas: lo único que se permite
+   adorno, y es la firma del dibujo técnico. */
+.card::before,
+.card::after {
+  content: "";
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  background-image:
+    linear-gradient(var(--rule-strong), var(--rule-strong)),
+    linear-gradient(var(--rule-strong), var(--rule-strong));
+  background-size: 100% 1px, 1px 100%;
+  background-position: center, center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.card::before {
+  top: 7px;
+  left: 7px;
+}
+
+.card::after {
+  right: 7px;
+  bottom: 7px;
 }
 
 .intro {
-  margin: 0 0 20px;
-  color: var(--color-muted);
+  margin: 0 0 22px;
+  max-width: 60ch;
+  color: var(--ink-soft);
 }
 
 .intro-list {
-  margin: 0 0 20px;
-  color: var(--color-muted);
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.intro-list li {
+  display: grid;
+  /* «Diagramas de casos de uso» es el nombre más largo: la columna cede antes
+     de partirlo en dos líneas. */
+  grid-template-columns: 13rem 1fr;
+  gap: 4px 18px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.intro-list strong {
+  font-family: var(--font-display);
+  font-size: 1.06rem;
+  font-weight: 600;
+}
+
+.intro-list span {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
 }
 
 .section-title {
-  margin: 28px 0 12px;
-  font-size: 1.1rem;
+  margin: 30px 0 12px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 
 /* ---------- Selector de dificultad ---------- */
@@ -94,27 +345,56 @@ main {
 .difficulty-field {
   display: grid;
   gap: 6px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-.difficulty-label {
-  font-size: 0.95rem;
-  font-weight: 600;
+.difficulty-label,
+.answer-label {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
 }
 
-.difficulty-select {
+.difficulty-select,
+.answer-input {
   width: 100%;
   padding: 12px 14px;
-  border: 2px solid var(--color-border);
-  border-radius: 12px;
-  background: var(--color-card);
-  color: var(--color-text);
+  background: var(--paper);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 2px;
+  color: var(--ink);
   font: inherit;
 }
 
-.difficulty-select:focus {
-  border-color: var(--color-primary);
+.difficulty-select {
+  /* La flecha nativa sobre fondo claro con el azul de delineante. */
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+    linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 51%, calc(100% - 14px) 51%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.difficulty-select:hover,
+.answer-input:hover {
+  border-color: var(--accent);
+}
+
+.difficulty-select:focus,
+.answer-input:focus {
   outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.answer-input:disabled {
+  background: var(--grid);
+  color: var(--ink-soft);
 }
 
 /* ---------- Botones ---------- */
@@ -128,50 +408,102 @@ button {
   display: block;
   width: 100%;
   padding: 14px 20px;
-  border: none;
-  border-radius: 12px;
-  background: var(--color-primary);
-  color: #ffffff;
-  font-size: 1.05rem;
+  background: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 2px;
+  color: var(--paper);
+  font-size: 1.02rem;
   font-weight: 600;
-  transition: background 0.15s ease, transform 0.05s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.primary-button:hover {
-  background: var(--color-primary-dark);
-}
-
-.primary-button:active {
-  transform: translateY(1px);
+.primary-button:hover:not(:disabled) {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
 }
 
 .primary-button:disabled {
-  background: #93a7c9;
+  background: transparent;
+  border-color: var(--rule);
+  color: var(--ink-soft);
   cursor: not-allowed;
+}
+
+/* Dentro del feedback el botón ya no compite con «Aceptar»: pasa a hueco. */
+.feedback .primary-button {
+  background: transparent;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.feedback .primary-button:hover {
+  background: var(--ink);
+  color: var(--paper);
 }
 
 /* ---------- Pantalla de preguntas ---------- */
 
+/* Contadores en monoespaciada: es la anotación del dibujo, no un título. */
 .quiz-header {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-  color: var(--color-muted);
-  font-size: 0.95rem;
+  gap: 14px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+}
+
+.quiz-score {
+  color: var(--ink);
   font-weight: 600;
 }
 
+/* La regla de avance del diagrama: una línea por pregunta y su marca de cota. */
+.progress {
+  position: relative;
+  height: 3px;
+  margin: 12px 0 20px;
+  background: var(--rule);
+}
+
+.progress-fill {
+  position: relative;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.25s ease;
+}
+
+/* Marca de cota en el punto alcanzado: se ancla al final de lo ya avanzado. */
+.progress-fill::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: 0;
+  width: 2px;
+  height: 11px;
+  background: var(--ink);
+}
+
+/* La figura se lee como un dibujo sobre papel milimetrado; los textos
+   (escenarios y nombres) van sobre papel liso, sin retícula detrás. */
 .symbol-box {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 150px;
+  min-height: 160px;
   margin-bottom: 18px;
-  padding: 18px;
-  background: var(--color-soft);
-  border: 1px dashed var(--color-border);
-  border-radius: 12px;
+  padding: 22px 18px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+
+.symbol-box:has(svg) {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 16px 16px;
 }
 
 .symbol-box svg {
@@ -196,79 +528,163 @@ button {
   max-width: 420px;
 }
 
+/* La tinta de las figuras pasa a ser la tinta del tema: los SVG traen el color
+   como atributo de presentación y cualquier regla CSS lo gana. `:is()` deja la
+   regla en un solo sitio para las tres cajas que llevan figuras: la del
+   enunciado, la de las opciones inversas y la del glosario. */
+:is(.symbol-box, .option-button, .glossary-figure) svg [stroke="#334155"] {
+  stroke: var(--ink);
+}
+
+:is(.symbol-box, .option-button, .glossary-figure) svg [fill="#334155"] {
+  fill: var(--ink);
+}
+
+:is(.symbol-box, .option-button, .glossary-figure) svg [fill="#ffffff"] {
+  fill: var(--paper);
+}
+
+:is(.symbol-box, .option-button, .glossary-figure) svg [fill="#f1f5f9"] {
+  fill: var(--grid);
+}
+
+:is(.symbol-box, .option-button, .glossary-figure) svg [fill="#e2e8f0"] {
+  fill: #dfe5ee;
+}
+
+:is(.symbol-box, .option-button, .glossary-figure) svg [stroke="#64748b"] {
+  stroke: var(--ink-soft);
+}
+
+/* El nombre de un símbolo es una lámina del libro: va en la tipografía de
+  .display, y por eso el enunciado invertido se lee de un vistazo. */
 .question-name {
   width: 100%;
   margin: 0;
-  font-size: clamp(1.4rem, 5vw, 1.9rem);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 6vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
   text-align: center;
 }
 
 .scenario {
   width: 100%;
   margin: 0;
+  padding-left: 16px;
+  border-left: 3px solid var(--rule-strong);
+  font-size: 1.06rem;
+  line-height: 1.65;
 }
 
 .question-hint {
-  margin: 0 0 14px;
-  color: var(--color-muted);
-  font-size: 0.95rem;
-  text-align: center;
+  margin: 0 0 16px;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  font-style: italic;
 }
+
+/* ---------- Opciones ---------- */
 
 .options {
   display: grid;
-  gap: 10px;
-  margin-bottom: 18px;
+  gap: 8px;
+  margin-bottom: 20px;
+  counter-reset: option;
 }
 
+/* Cada opción es una pieza del dibujo con su letra a la izquierda, como las
+   llamadas de un plano. La letra sale del contador de CSS: ni una línea de JS. */
 .option-button {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
   width: 100%;
-  padding: 14px 16px;
-  background: var(--color-card);
-  border: 2px solid var(--color-border);
-  border-radius: 12px;
-  color: var(--color-text);
+  padding: 13px 16px;
+  background: var(--paper);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 2px;
+  color: var(--ink);
   font-size: 1rem;
   text-align: left;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.option-button:hover {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
+.option-button::before {
+  content: counter(option, upper-alpha);
+  counter-increment: option;
+  flex: none;
+  width: 1.2em;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.option-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .option-button.is-selected {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 4px 0 0 var(--accent);
   font-weight: 600;
 }
 
-.option-button.is-correct {
-  border-color: var(--color-success);
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-  font-weight: 700;
+.option-button.is-selected::before {
+  color: var(--accent);
 }
 
+/* Validado con el lápiz verde: filete a la izquierda y tinte muy claro. */
+.option-button.is-correct {
+  border-color: var(--pen-green);
+  background: var(--pen-green-soft);
+  box-shadow: inset 4px 0 0 var(--pen-green);
+  color: #14563a;
+  font-weight: 600;
+}
+
+.option-button.is-correct::before {
+  color: var(--pen-green);
+}
+
+/* Fallado con el lápiz rojo y rayado, como se corrige a mano. */
 .option-button.is-wrong {
-  border-color: var(--color-danger);
-  background: var(--color-danger-bg);
-  color: var(--color-danger-text);
-  font-weight: 700;
+  border-color: var(--pen-red);
+  background-color: var(--pen-red-soft);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(176, 42, 32, 0.11) 0 2px,
+    transparent 2px 8px
+  );
+  box-shadow: inset 4px 0 0 var(--pen-red);
+  color: #8d221a;
+  font-weight: 600;
+}
+
+.option-button.is-wrong::before {
+  color: var(--pen-red);
 }
 
 .option-button:disabled {
   cursor: default;
-  pointer-events: none;
 }
 
+/* Las opciones que son dibujos llevan la letra en la esquina, para no robarle
+   sitio a la figura. */
 .option-button--symbol {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
+  position: relative;
+  display: block;
+  padding: 24px 14px 14px;
+}
+
+.option-button--symbol::before {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  width: auto;
 }
 
 .option-button--symbol svg {
@@ -296,74 +712,59 @@ button {
 .answer-box {
   display: grid;
   gap: 6px;
-  margin-bottom: 18px;
-}
-
-.answer-label {
-  color: var(--color-muted);
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.answer-input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 2px solid var(--color-border);
-  border-radius: 12px;
-  background: var(--color-card);
-  color: var(--color-text);
-  font: inherit;
-}
-
-.answer-input:focus {
-  border-color: var(--color-primary);
-  outline: none;
-}
-
-.answer-input:disabled {
-  background: var(--color-soft);
-  color: var(--color-muted);
+  margin-bottom: 20px;
 }
 
 /* ---------- Explicación tras aceptar ---------- */
 
 .feedback {
-  margin-top: 16px;
-  padding: 16px;
-  border-left: 5px solid var(--color-border);
-  border-radius: 10px;
-  background: var(--color-soft);
+  margin-top: 22px;
+  padding: 18px 18px 18px 20px;
+  background: var(--grid);
+  border-left: 4px solid var(--rule-strong);
 }
 
 .feedback.is-correct {
-  background: var(--color-success-bg);
-  border-color: var(--color-success);
-  color: var(--color-success-text);
+  background: var(--pen-green-soft);
+  border-left-color: var(--pen-green);
 }
 
 .feedback.is-wrong {
-  background: var(--color-danger-bg);
-  border-color: var(--color-danger);
-  color: var(--color-danger-text);
+  background-color: var(--pen-red-soft);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(176, 42, 32, 0.08) 0 2px,
+    transparent 2px 8px
+  );
+  border-left-color: var(--pen-red);
 }
 
 .feedback-title {
-  margin: 0 0 10px;
-  font-size: 1.05rem;
-  font-weight: 700;
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.feedback.is-correct .feedback-title {
+  color: #14563a;
+}
+
+.feedback.is-wrong .feedback-title {
+  color: #8d221a;
 }
 
 .feedback-lead {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   font-weight: 600;
 }
 
 .feedback-body {
-  margin: 0 0 16px;
+  margin: 0 0 18px;
 }
 
 .feedback-block {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 
 .feedback-block:last-child {
@@ -371,119 +772,205 @@ button {
 }
 
 .feedback-label {
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
 }
 
 /* ---------- Lista de puntajes ---------- */
 
+/* Un grupo por dificultad, con su nombre encima: los puntos de bancos distintos
+   no son comparables, así que nunca se ordenan juntos. */
 .scores-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.score-group {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.score-group-title {
+  margin: 0 0 4px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.score-rows {
   margin: 0;
   padding: 0;
   list-style: none;
   counter-reset: score-position;
 }
 
-.scores-list li {
+.score-rows li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
+  padding: 5px 0;
   counter-increment: score-position;
-  margin-bottom: 8px;
-  padding: 10px 14px;
-  background: var(--color-soft);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
 }
 
-.scores-list li::before {
-  content: counter(score-position) ".";
-  width: 1.6em;
-  color: var(--color-muted);
-  font-weight: 700;
+.score-rows li::before {
+  content: counter(score-position);
+  width: 2ch;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
 }
 
 .score-points {
   margin-left: auto;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
+/* Sello de récord: hueco, en el lápiz del ámbar. Va detrás de los puntos, que
+   `margin-left: auto` empuja a la derecha. */
 .record-badge {
-  padding: 2px 10px;
-  background: #fef3c7;
-  border-radius: 999px;
-  color: #92400e;
-  font-size: 0.75rem;
-  font-weight: 700;
+  padding: 1px 8px;
+  border: 1px solid var(--pen-amber);
+  border-radius: 2px;
+  color: var(--pen-amber);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
 }
 
 .empty-message {
   margin: 0;
   padding: 14px;
-  background: var(--color-soft);
-  border: 1px dashed var(--color-border);
-  border-radius: 10px;
-  color: var(--color-muted);
-  text-align: center;
+  border: 1px dashed var(--rule-strong);
+  border-radius: 2px;
+  color: var(--ink-soft);
 }
 
 /* ---------- Pantalla de resultado ---------- */
 
 .final-score {
   margin: 0 0 8px;
-  font-size: 1.3rem;
-  font-weight: 700;
+  max-width: 24ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .record-message {
-  margin: 0 0 22px;
-  color: var(--color-muted);
+  margin: 0 0 24px;
+  color: var(--ink-soft);
 }
 
 /* ---------- Pie de página ---------- */
 
 .site-footer {
-  max-width: 640px;
-  margin: 32px auto 0;
-  padding-top: 20px;
-  border-top: 1px solid var(--color-border);
-  color: var(--color-muted);
+  max-width: 680px;
+  margin: 30px auto 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule-strong);
+  color: var(--ink-soft);
   font-size: 0.9rem;
-  text-align: center;
 }
 
 .privacy-box {
-  margin-bottom: 14px;
-  text-align: left;
+  margin-bottom: 16px;
+  max-width: 68ch;
 }
 
 .privacy-box summary {
   cursor: pointer;
-  color: var(--color-text);
-  font-weight: 600;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
 }
 
 .privacy-text {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
 }
 
 .site-footer p {
-  margin: 6px 0;
+  margin: 4px 0;
+}
+
+.footer-copy,
+.footer-contact {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
 }
 
 .site-footer a {
-  color: var(--color-primary);
+  color: var(--accent);
   overflow-wrap: anywhere;
 }
 
 /* ---------- Móvil ---------- */
 
-@media (max-width: 480px) {
-  .card {
-    padding: 18px;
+@media (max-width: 560px) {
+  body {
+    padding: 0 14px 40px;
   }
 
+  /* En una sola columna el título se alinea a la izquierda y el botón del
+     glosario pasa debajo: al lado, el título tendría que cederle sitio. */
   .site-header {
-    padding: 26px 0 16px;
+    grid-template-columns: 1fr;
+    padding: 28px 0 18px;
+  }
+
+  .site-header h1,
+  .subtitle {
+    grid-column: 1;
+  }
+
+  .glossary-toggle {
+    grid-column: 1;
+    grid-row: 3;
+    margin-top: 16px;
+  }
+
+  main {
+    margin-top: 18px;
+  }
+
+  .card {
+    padding: 26px 18px 22px;
+  }
+
+  /* Las marcas de registro se van antes de estorbar al texto. */
+  .card::before,
+  .card::after {
+    display: none;
+  }
+
+  /* En una columna el nombre y la descripción de cada modo caben apilados. */
+  .intro-list li {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .scenario {
+    font-size: 1.02rem;
+  }
+
+  .symbol-box {
+    min-height: 130px;
+    padding: 16px 12px;
+  }
+}
+
+/* ---------- Sin movimiento ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
   }
 }
