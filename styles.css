@@ -923,6 +923,43 @@ button {
   overflow-wrap: anywhere;
 }
 
+/* ---------- Escritorio: el resultado a la derecha ---------- */
+
+/* Por debajo de 1280 px el panel se queda donde cayó: debajo de la tarjeta, como
+   hasta ahora. A partir de ahí la pregunta y su explicación son dos columnas.
+   Los canales laterales son iguales (`1fr` a cada lado), así que la tarjeta
+   sigue cayendo en el centro exacto de la página: no se desplaza ni un píxel,
+   solo se abre sitio a su derecha.
+
+   El canal se reserva aunque esté vacío, y eso es lo que evita que la página
+   salte al aparecer la explicación. El `sticky` es lo que evita tener que
+   desplazarse: el panel queda clavado arriba aunque la pregunta sea más larga
+   que la ventana. */
+@media (min-width: 1280px) {
+  .quiz-stage {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 680px) 1fr;
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  .quiz-stage > .screen {
+    grid-column: 2;
+  }
+
+  .quiz-stage > .feedback {
+    grid-column: 3;
+    position: sticky;
+    top: 20px;
+    margin-top: 0;
+    /* Si la explicación no cabe, se desplaza por dentro en vez de alargar la
+       página. */
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 /* ---------- Móvil ---------- */
 
 @media (max-width: 560px) {
