@@ -687,24 +687,15 @@ button {
   width: auto;
 }
 
+/* Una sola medida para todas las figuras de opción, la que ya usaban los
+   diagramas de casos de uso. Antes cada familia tenía la suya (280 símbolos
+   sueltos, 320 relaciones, 300 interacciones, 260 casos de uso) y como el símbolo
+   suelto solo mide 200 px de ancho, en Difícil se dibujaba un 40 % más grande que
+   su tamaño real y los botones quedaban mucho mayores que en los demás modos. */
 .option-button--symbol svg {
   width: 100%;
-  max-width: 280px;
-  height: auto;
-}
-
-.option-button--symbol svg.relation-svg {
-  max-width: 320px;
-}
-
-.option-button--symbol svg.interaction-svg {
-  max-width: 300px;
-}
-
-/* Tres diagramas de casos de uso en fila: cada uno se estrecha un poco para que
-   quepan los tres en pantallas pequeñas. */
-.option-button--symbol svg.usecase-svg {
   max-width: 260px;
+  height: auto;
 }
 
 /* ---------- Respuesta abierta ---------- */
