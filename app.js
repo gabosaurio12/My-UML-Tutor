@@ -305,6 +305,13 @@ function showScreen(screen) {
     item.classList.add("is-hidden");
   });
   screen.classList.remove("is-hidden");
+
+  // El panel de resultado ya no está dentro de la tarjeta del quiz, así que no
+  // se oculta con ella: hay que apagarlo al salir, o se quedaría pegado al lado
+  // de la pantalla de resultado.
+  if (screen !== quizScreen) {
+    feedbackBox.classList.add("is-hidden");
+  }
 }
 
 function shuffle(items) {
@@ -503,6 +510,7 @@ function renderQuestion() {
   feedbackBox.classList.add("is-hidden");
   acceptButton.classList.remove("is-hidden");
   acceptButton.disabled = true;
+  nextButton.classList.add("is-hidden");
   nextButton.textContent =
     state.currentIndex === state.sessionQuestions.length - 1
       ? "Ver resultado"
@@ -703,8 +711,14 @@ function acceptAnswer() {
   scoreValue.textContent = "Puntos: " + state.score;
 
   markOptions(question);
-  renderFeedback(feedback);
+
+  // El botón cambia de papel en el mismo sitio: «Aceptar» se retira y «Siguiente»
+  // entra justo debajo. Se muestra antes de pintar la explicación, porque el foco
+  // va a él y un elemento oculto no lo puede recibir.
   acceptButton.classList.add("is-hidden");
+  nextButton.classList.remove("is-hidden");
+
+  renderFeedback(feedback);
 }
 
 // Quita los signos diacríticos («ó» → «o») para comparar sin tildes.
@@ -799,6 +813,12 @@ function renderFeedback(feedback) {
   }
   feedbackBody.appendChild(createFeedbackBlock("Cómo se dibuja:", [feedback.syntax]));
   feedbackBody.appendChild(createFeedbackBlock("Qué modela:", [feedback.meaning]));
+
+  // «Aceptar» desaparece al aceptar, así que el foco se queda sin elemento donde
+  // estaba. Se pasa a «Siguiente», que es la única acción que queda. Con
+  // `preventScroll` la página no da un salto: el panel puede estar ya a la vista
+  // por su `sticky`, y en móvil el alumno ya lo tiene debajo.
+  nextButton.focus({ preventScroll: true });
 }
 
 // Un párrafo: etiqueta en negrita y una o varias líneas debajo.

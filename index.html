@@ -51,42 +51,47 @@
       </p>
     </section>
 
-    <!-- Pantalla de preguntas -->
-    <section id="quizScreen" class="screen card is-hidden">
-      <div class="quiz-header">
-        <span id="questionCounter">Pregunta 1 de 10</span>
-        <span id="scoreValue" class="quiz-score">Puntos: 0</span>
-      </div>
+    <!-- Pantalla de preguntas. El panel de resultado es hermano de la tarjeta y
+         no un trozo suyo: en escritorio se coloca a su derecha (styles.css) y en
+         pantallas estrechas cae debajo, como dos elementos separados. -->
+    <div class="quiz-stage">
+      <section id="quizScreen" class="screen card is-hidden">
+        <div class="quiz-header">
+          <span id="questionCounter">Pregunta 1 de 10</span>
+          <span id="scoreValue" class="quiz-score">Puntos: 0</span>
+        </div>
 
-      <div id="sessionProgress" class="progress" role="progressbar" aria-valuemin="1"
-           aria-valuemax="10" aria-valuenow="1" aria-label="Pregunta actual">
-        <div id="progressFill" class="progress-fill"></div>
-      </div>
+        <div id="sessionProgress" class="progress" role="progressbar" aria-valuemin="1"
+             aria-valuemax="10" aria-valuenow="1" aria-label="Pregunta actual">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
 
-      <div id="symbolBox" class="symbol-box"></div>
+        <div id="symbolBox" class="symbol-box"></div>
 
-      <p id="questionHint" class="question-hint is-hidden"></p>
+        <p id="questionHint" class="question-hint is-hidden"></p>
 
-      <div id="answerBox" class="answer-box is-hidden">
-        <label class="answer-label" for="answerInput">Escribe el nombre del símbolo</label>
-        <input id="answerInput" class="answer-input" type="text" autocomplete="off"
-               autocapitalize="none" spellcheck="false">
-      </div>
+        <div id="answerBox" class="answer-box is-hidden">
+          <label class="answer-label" for="answerInput">Escribe el nombre del símbolo</label>
+          <input id="answerInput" class="answer-input" type="text" autocomplete="off"
+                 autocapitalize="none" spellcheck="false">
+        </div>
 
-      <div id="optionsList" class="options"></div>
+        <div id="optionsList" class="options"></div>
 
-      <button id="acceptButton" type="button" class="primary-button" disabled>
-        Aceptar
-      </button>
+        <button id="acceptButton" type="button" class="primary-button" disabled>
+          Aceptar
+        </button>
 
-      <div id="feedbackBox" class="feedback is-hidden">
-        <p id="feedbackTitle" class="feedback-title"></p>
-        <div id="feedbackBody" class="feedback-body"></div>
-        <button id="nextButton" type="button" class="primary-button">
+        <button id="nextButton" type="button" class="primary-button is-hidden">
           Siguiente
         </button>
-      </div>
-    </section>
+      </section>
+
+      <aside id="feedbackBox" class="feedback is-hidden">
+        <p id="feedbackTitle" class="feedback-title"></p>
+        <div id="feedbackBody" class="feedback-body"></div>
+      </aside>
+    </div>
 
     <!-- Pantalla de resultado -->
     <section id="resultScreen" class="screen card is-hidden">
