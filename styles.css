@@ -260,9 +260,16 @@ body.glossary-open {
 
 /* ---------- La lámina ---------- */
 
+/* El límite de ancho vive en cada pantalla y no en `main`: el quiz necesita que
+   su contenedor sea más ancho que la tarjeta para poder dejarle un panel al
+   lado, y para eso `main` no puede estar acotado. */
 main {
-  max-width: 680px;
   margin: 26px auto 0;
+}
+
+.screen {
+  max-width: 680px;
+  margin: 0 auto;
 }
 
 .card {
@@ -717,8 +724,12 @@ button {
 
 /* ---------- Explicación tras aceptar ---------- */
 
+/* El panel lleva su propio límite porque ya no vive dentro de la tarjeta: en el
+   flujo normal se alinea con ella, y en escritorio lo acota el canal de la
+   rejilla (más abajo). */
 .feedback {
-  margin-top: 22px;
+  max-width: 680px;
+  margin: 22px auto 0;
   padding: 18px 18px 18px 20px;
   background: var(--grid);
   border-left: 4px solid var(--rule-strong);
