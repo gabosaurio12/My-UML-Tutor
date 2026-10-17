@@ -43,6 +43,11 @@
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
+
+  /* El ancho de la lámina. Cabecera, pantallas, pie y el canal del panel salen de
+     aquí y no de un 680 repetido: la igualdad de anchos pasa a ser una propiedad
+     del tema y no una coincidencia que se rompe al tocar uno de ellos. */
+  --sheet-width: 680px;
 }
 
 * {
@@ -82,7 +87,7 @@ body {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   column-gap: 16px;
-  max-width: 680px;
+  max-width: var(--sheet-width);
   margin: 0 auto;
   padding: 40px 0 22px;
   /* Rótulo de la lámina: filete grueso y filete fino debajo. */
@@ -268,7 +273,7 @@ main {
 }
 
 .screen {
-  max-width: 680px;
+  max-width: var(--sheet-width);
   margin: 0 auto;
 }
 
@@ -434,18 +439,6 @@ button {
   border-color: var(--rule);
   color: var(--ink-soft);
   cursor: not-allowed;
-}
-
-/* Dentro del feedback el botón ya no compite con «Aceptar»: pasa a hueco. */
-.feedback .primary-button {
-  background: transparent;
-  border-color: var(--ink);
-  color: var(--ink);
-}
-
-.feedback .primary-button:hover {
-  background: var(--ink);
-  color: var(--paper);
 }
 
 /* ---------- Pantalla de preguntas ---------- */
@@ -728,7 +721,7 @@ button {
    flujo normal se alinea con ella, y en escritorio lo acota el canal de la
    rejilla (más abajo). */
 .feedback {
-  max-width: 680px;
+  max-width: var(--sheet-width);
   margin: 22px auto 0;
   padding: 18px 18px 18px 20px;
   background: var(--grid);
@@ -883,7 +876,7 @@ button {
 /* ---------- Pie de página ---------- */
 
 .site-footer {
-  max-width: 680px;
+  max-width: var(--sheet-width);
   margin: 30px auto 0;
   padding-top: 22px;
   border-top: 1px solid var(--rule-strong);
@@ -938,7 +931,7 @@ button {
 @media (min-width: 1280px) {
   .quiz-stage {
     display: grid;
-    grid-template-columns: 1fr minmax(0, 680px) 1fr;
+    grid-template-columns: 1fr minmax(0, var(--sheet-width)) 1fr;
     column-gap: 24px;
     align-items: start;
   }

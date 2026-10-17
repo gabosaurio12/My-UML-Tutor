@@ -510,6 +510,7 @@ function renderQuestion() {
   feedbackBox.classList.add("is-hidden");
   acceptButton.classList.remove("is-hidden");
   acceptButton.disabled = true;
+  nextButton.classList.add("is-hidden");
   nextButton.textContent =
     state.currentIndex === state.sessionQuestions.length - 1
       ? "Ver resultado"
@@ -710,8 +711,14 @@ function acceptAnswer() {
   scoreValue.textContent = "Puntos: " + state.score;
 
   markOptions(question);
-  renderFeedback(feedback);
+
+  // El botón cambia de papel en el mismo sitio: «Aceptar» se retira y «Siguiente»
+  // entra justo debajo. Se muestra antes de pintar la explicación, porque el foco
+  // va a él y un elemento oculto no lo puede recibir.
   acceptButton.classList.add("is-hidden");
+  nextButton.classList.remove("is-hidden");
+
+  renderFeedback(feedback);
 }
 
 // Quita los signos diacríticos («ó» → «o») para comparar sin tildes.
