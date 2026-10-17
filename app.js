@@ -305,6 +305,13 @@ function showScreen(screen) {
     item.classList.add("is-hidden");
   });
   screen.classList.remove("is-hidden");
+
+  // El panel de resultado ya no está dentro de la tarjeta del quiz, así que no
+  // se oculta con ella: hay que apagarlo al salir, o se quedaría pegado al lado
+  // de la pantalla de resultado.
+  if (screen !== quizScreen) {
+    feedbackBox.classList.add("is-hidden");
+  }
 }
 
 function shuffle(items) {
@@ -799,6 +806,12 @@ function renderFeedback(feedback) {
   }
   feedbackBody.appendChild(createFeedbackBlock("Cómo se dibuja:", [feedback.syntax]));
   feedbackBody.appendChild(createFeedbackBlock("Qué modela:", [feedback.meaning]));
+
+  // «Aceptar» desaparece al aceptar, así que el foco se queda sin elemento donde
+  // estaba. Se pasa a «Siguiente», que es la única acción que queda. Con
+  // `preventScroll` la página no da un salto: el panel puede estar ya a la vista
+  // por su `sticky`, y en móvil el alumno ya lo tiene debajo.
+  nextButton.focus({ preventScroll: true });
 }
 
 // Un párrafo: etiqueta en negrita y una o varias líneas debajo.
