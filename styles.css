@@ -48,11 +48,6 @@
      aquí y no de un 680 repetido: la igualdad de anchos pasa a ser una propiedad
      del tema y no una coincidencia que se rompe al tocar uno de ellos. */
   --sheet-width: 680px;
-
-  /* La columna fija que ocupa la explicación en escritorio. El resto del ancho se
-     lo lleva la pregunta, que es lo que crece. */
-  --panel-width: 360px;
-  --quiz-gap: 28px;
 }
 
 * {
@@ -924,51 +919,46 @@ button {
 /* ---------- Escritorio: el resultado a la derecha ---------- */
 
 /* Por debajo de 1280 px el panel se queda donde cayó: debajo de la tarjeta, como
-   hasta ahora. A partir de ahí la pregunta y su explicación son dos columnas.
+   hasta ahora. A partir de ahí la pregunta y su explicación son dos columnas, y
+   la tarjeta conserva exactamente el ancho que tiene en el resto de pantallas.
 
-   La pista de la pregunta es `minmax(0, 1fr)`: se queda con todo el ancho que
-   deja la columna fija del panel, y ese es el máximo posible sin que el panel
-   tenga que encogerse. La columna central **no** puede ser `minmax(0, <ancho
-   fijo>)`: en una pista así el ancho es el menor entre el tope y lo que mide el
-   contenido, así que el tope sería solo un techo y una pregunta con tres nombres
-   cortos de opción encogería la tarjeta (y con ella los botones, que se veían
-   altísimos al partirse el texto).
+   Dos cosas hacen que eso sea verdad, y las dos hay que respetar:
+
+   1. La columna central es una longitud fija (`1fr var(--sheet-width) 1fr`),
+      no `minmax(0, <fijo>)`. En una pista `minmax` el ancho es el menor entre su
+      tope y lo que mide el contenido, así que el tope sería solo un techo y una
+      pregunta con tres nombres cortos de opción encogería la tarjeta.
+   2. La tarjeta **no conserva `margin: 0 auto`** dentro de la rejilla. Los
+      márgenes `auto` anulan el estirado por defecto de un elemento de rejilla y
+      lo dejan a su ancho de contenido, que es el mismo problema que (1) por otro
+      lado. Aquí manda la pista, y la tarjeta la ocupa entera.
 
    El canal se reserva aunque esté vacío, y eso es lo que evita que la página
    salte al aparecer la explicación. El `sticky` es lo que evita tener que
    desplazarse: el panel queda clavado arriba aunque la pregunta sea más larga
    que la ventana. */
 @media (min-width: 1280px) {
-  /* La pregunta se lleva **todo** el ancho que no ocupa la explicación, y la
-     explicación una columna fija. Nada de canales simétricos: la tarjeta ya no
-     compite con la cabecera por el mismo ancho, así que no hace falta que mida
-     lo mismo. */
-
-  /* Tope del conjunto en pantallas enormes. Es la única línea que hay que tocar
-     para que ocupe literalmente todo el ancho: basta con quitar este `max-width`
-     y el margen de abajo. */
   .quiz-stage {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--panel-width);
-    column-gap: var(--quiz-gap);
+    grid-template-columns: 1fr var(--sheet-width) 1fr;
+    column-gap: 24px;
     align-items: start;
-    max-width: 1680px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
+  /* Canales iguales a ambos lados: la tarjeta cae en el centro exacto de la
+     página, como en inicio y resultado. */
   .quiz-stage > .screen {
-    grid-column: 1;
+    grid-column: 2;
     max-width: none;
     margin: 0;
   }
 
   .quiz-stage > .feedback {
-    grid-column: 2;
+    grid-column: 3;
+    max-width: none;
+    margin: 0;
     position: sticky;
     top: 20px;
-    max-width: none;
-    margin-top: 0;
     /* Si la explicación no cabe, se desplaza por dentro en vez de alargar la
        página. */
     max-height: calc(100vh - 40px);
