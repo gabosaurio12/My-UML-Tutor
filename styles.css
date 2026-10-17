@@ -924,6 +924,12 @@ button {
    sigue cayendo en el centro exacto de la página: no se desplaza ni un píxel,
    solo se abre sitio a su derecha.
 
+   La columna central es una longitud fija y **no** `minmax(0, …)`: en una pista
+   `minmax`, el ancho es el menor entre el tope y lo que ocupa el contenido, así
+   que una pregunta con tres nombres cortos de opción encogía la tarjeta (y con
+   ella los botones, que se veían altísimos al partirse el texto). Una pista fija
+   mide lo mismo siempre, que es justo lo que se quiere.
+
    El canal se reserva aunque esté vacío, y eso es lo que evita que la página
    salte al aparecer la explicación. El `sticky` es lo que evita tener que
    desplazarse: el panel queda clavado arriba aunque la pregunta sea más larga
@@ -931,7 +937,7 @@ button {
 @media (min-width: 1280px) {
   .quiz-stage {
     display: grid;
-    grid-template-columns: 1fr minmax(0, var(--sheet-width)) 1fr;
+    grid-template-columns: 1fr var(--sheet-width) 1fr;
     column-gap: 24px;
     align-items: start;
   }
